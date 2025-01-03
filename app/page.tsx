@@ -1,101 +1,125 @@
-import Image from "next/image";
+import ChatInterface from '@/components/chat-interface'
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div 
+      className="min-h-screen p-8"
+      style={{
+        backgroundImage: 'url("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/haikei1-VBjFENRnUMVqm56SaO4P7NIOgitqL9.png")',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      <div className="max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          <div className="relative min-h-[500px]">
+            <div className="pt-8">
+              <h1 className="text-4xl font-bold text-blue-900 mb-4 text-center">
+                AutoCAD Assistant
+              </h1>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">最近のチャット履歴</h3>
+                  <div className="space-y-2">
+                    <div 
+                      className="bg-blue-50/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900"
+                      title="図面の寸法入力について質問しました。寸法スタイルの設定方法や、関連寸法の作成方法などについて詳しく確認しました。"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        図面の寸法入力について質問しました...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-50/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900"
+                      title="ブロックの作成方法を確認しました。属性の設定や動的ブロックの作成手順について学びました。"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        ブロックの作成方法を確認しました...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-50/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900"
+                      title="印刷設定の手順を確認しました。用紙サイズやスケール、線の太さなどの設定方法を確認しました。"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        印刷設定の手順を確認しました...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-50/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 opacity-50"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        &nbsp;
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-50/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 opacity-50"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        &nbsp;
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">ピン留めメッセージ</h3>
+                  <div className="space-y-2">
+                    <div 
+                      className="bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200"
+                      title="よく使うショートカットキー一覧：移動(M)、コピー(CO)、トリム(TR)、延長(EX)、オフセット(O)など、作図効率を上げる重要なコマンド"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        よく使うショートカットキー一覧...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200"
+                      title="図面テンプレートの保存場所：C:\Users\[ユーザー名]\AppData\Local\Autodesk\AutoCAD 2024\R24.0\[言語]\Template"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        図面テンプレートの保存場所...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200"
+                      title="プリンター設定の初期値：用紙サイズ(A3)、尺度(1:50)、線の太さ(0.5mm)、モノクロ印刷設定"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        プリンター設定の初期値...
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200 opacity-50"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        &nbsp;
+                      </div>
+                    </div>
+                    <div 
+                      className="bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200 opacity-50"
+                    >
+                      <div className="px-2 py-2 truncate">
+                        &nbsp;
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute bottom-0 left-24 w-[17rem] h-[17rem] -mb-32">
+              <img
+                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/character-6ovD0VT18sKKqEYONeI08uvB1Oq3AH.png"
+                alt="AI Assistant Character"
+                className="w-full h-full object-contain"
+              />
+            </div>
+          </div>
+          <div className="relative">
+            <ChatInterface />
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
-  );
+  )
 }
+
