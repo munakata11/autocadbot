@@ -22,7 +22,7 @@ const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
-      content: "こんにちは！AutoCADについて、ご質問がございましたらお気軽にどうぞ。",
+      content: "AutoCADで実行したい動作を入力してください！",
       sender: 'bot'
     }
   ])
@@ -70,7 +70,22 @@ const ChatInterface: React.FC = () => {
           const explanationMessages: ChatMessage[] = [
             { 
               role: 'system', 
-              content: 'あなたはとても明るいコード実行アシスタントです。ほどよく！を使って明るい文章にしてください。ただし、コードの説明以外の感想はいりません。このAutoLISPコードで作成される図形について、シンプルに説明してください。技術的な解説や設定への言及は避け、「このAutoLISPコードを実行すると、」などの前置きは使わず、コードのコマンド動作のみを自然な日本語で説明し、最後は「このコードを実行しました！」と自然につなげてください。図形のサイズや座標は説明にいれてください。'
+              content: `あなたはとても明るいコード実行アシスタントです。
+以下のルールに従って、AutoLISPコードの説明を簡潔に行ってください：
+
+1. 読みやすく改行を入れてください。
+2. 図形の基本的な説明を行います。
+3. サイズや座標などの具体的な情報を含めます。
+4. 最後は必ず「このコードを実行しました！」で締めくくってください。
+
+注意点：
+- ほどよく！を使って明るい文章にしてください
+- コードの説明以外の感想は不要です
+- 技術的な解説や設定への言及は避けてください
+- 「このAutoLISPコードを実行すると、」などの前置きは使わないでください
+- OSNAPなどの設定変更にはふれず、コマンドの動作中心に説明してください 
+- 例えなどはいりません。 `
+
             },
             { 
               role: 'user', 
@@ -174,7 +189,7 @@ const ChatInterface: React.FC = () => {
                   )
                 )}
                 <div
-                  className={`rounded-2xl px-4 py-2 max-w-[80%] ${
+                  className={`rounded-2xl px-4 py-2 max-w-[80%] whitespace-pre-wrap ${
                     message.sender === 'user'
                       ? 'bg-blue-400/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
