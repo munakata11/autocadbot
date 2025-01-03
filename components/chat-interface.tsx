@@ -31,6 +31,7 @@ const ChatInterface: React.FC = () => {
   const [showCode, setShowCode] = useState(true)
   const [showChat, setShowChat] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -130,7 +131,13 @@ const ChatInterface: React.FC = () => {
   }
 
   const handleShortcutClick = (text: string) => {
-    setInput(text)
+    const buttonText = text
+    setInput(current => current + (current.length > 0 ? ' ' : '') + buttonText)
+    setTimeout(() => {
+      inputRef.current?.focus()
+      const length = inputRef.current?.value.length || 0
+      inputRef.current?.setSelectionRange(length, length)
+    }, 0)
   }
 
   const scrollToBottom = () => {
@@ -207,6 +214,7 @@ const ChatInterface: React.FC = () => {
         <div className="p-4 border-t border-white/20 bg-white">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <Input
+              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="メッセージを入力..."
@@ -227,6 +235,22 @@ const ChatInterface: React.FC = () => {
               size="icon" 
               className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
               onClick={() => {
+                setInput("")
+                inputRef.current?.focus()
+              }}
+              disabled={isLoading}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6L6 18"></path>
+                <path d="M6 6l12 12"></path>
+              </svg>
+              <span className="sr-only">クリア</span>
+            </Button>
+            <Button 
+              type="button" 
+              size="icon" 
+              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
+              onClick={() => {
                 alert('音声入力機能は現在開発中です。')
               }}
               disabled={isLoading}
@@ -240,68 +264,68 @@ const ChatInterface: React.FC = () => {
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("基本的な使い方を教えて")}
+                onClick={() => handleShortcutClick("ユーザー選択")}
                 disabled={isLoading}
               >
-                使い方
+               ユーザー選択 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("図面の作成方法を教えて")}
+                onClick={() => handleShortcutClick("原点(0,0)")}
                 disabled={isLoading}
               >
-                図面作成
+               原点(0,0)
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("寸法の入力方法は？")}
+                onClick={() => handleShortcutClick("四角形")}
                 disabled={isLoading}
               >
-                寸法入力
+               四角形 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("レイヤーの使い方は？")}
+                onClick={() => handleShortcutClick("円")}
                 disabled={isLoading}
               >
-                レイヤー
+                円
               </Button>
             </div>
             <div className="grid grid-cols-4 gap-2">
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("印刷の設定方法は？")}
+                onClick={() => handleShortcutClick("選択し")}
                 disabled={isLoading}
               >
-                印刷設定
+              選択し 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("ブロックの作成方法は？")}
+                onClick={() => handleShortcutClick("描いて")}
                 disabled={isLoading}
               >
-                ブロック
+               描いて 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("外部参照の使い方は？")}
+                onClick={() => handleShortcutClick("画層")}
                 disabled={isLoading}
               >
-                外部参照
+               画層 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("トラブルシューティング")}
+                onClick={() => handleShortcutClick("寸法")}
                 disabled={isLoading}
               >
-                対処方法
+              寸法 
               </Button>
             </div>
           </div>
