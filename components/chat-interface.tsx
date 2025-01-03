@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Send, Mic } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { generateChatResponse, ChatMessage } from '@/lib/groq'
+import { generateChatResponse as generateGroqResponse, ChatMessage } from '@/lib/groq'
+import { generateChatResponse as generateDeepseekResponse } from '@/lib/deepseek'
 
 type MessageSender = 'user' | 'bot'
 
@@ -16,11 +17,6 @@ interface Message {
   content: string
   sender: MessageSender
 }
-
-const SYSTEM_PROMPT = `あなたはAutoCADのエキスパートアシスタントです。
-AutoCADの使用方法、図面作成のテクニック、トラブルシューティングなどについて、
-わかりやすく丁寧に説明することができます。
-専門用語を使用する際は、初心者にもわかるように補足説明を加えてください。`
 
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -32,6 +28,9 @@ const ChatInterface: React.FC = () => {
   ])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [showCode, setShowCode] = useState(true)
+  const [showChat, setShowChat] = useState(true)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,13 +42,12 @@ const ChatInterface: React.FC = () => {
       sender: 'user'
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages(messages => [...messages, userMessage])
     setInput("")
     setIsLoading(true)
 
     try {
       const chatMessages: ChatMessage[] = [
-        { role: 'system', content: SYSTEM_PROMPT },
         ...messages.map(msg => ({
           role: msg.sender === 'user' ? 'user' : 'assistant',
           content: msg.content
@@ -57,19 +55,59 @@ const ChatInterface: React.FC = () => {
         { role: 'user', content: input }
       ]
 
-      const response = await generateChatResponse(chatMessages)
+      const codeResponse = await generateGroqResponse(chatMessages)
+      
+      if (codeResponse) {
+        if (showCode) {
+          setMessages(messages => [...messages, {
+            id: Date.now() + 1,
+            content: codeResponse,
+            sender: 'bot' as const
+          }])
+        }
 
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        content: response || "申し訳ありません。エラーが発生しました。",
-        sender: 'bot'
-      }])
+        if (showChat) {
+          const explanationMessages: ChatMessage[] = [
+            { 
+              role: 'system', 
+              content: 'あなたはとても明るいコード実行アシスタントです。ほどよく！を使って明るい文章にしてください。ただし、コードの説明以外の感想はいりません。このAutoLISPコードで作成される図形について、シンプルに説明してください。技術的な解説や設定への言及は避け、「このAutoLISPコードを実行すると、」などの前置きは使わず、コードのコマンド動作のみを自然な日本語で説明し、最後は「このコードを実行しました！」と自然につなげてください。図形のサイズや座標は説明にいれてください。'
+            },
+            { 
+              role: 'user', 
+              content: codeResponse 
+            }
+          ]
+          
+          const explanationResponse = await generateDeepseekResponse(explanationMessages)
+          
+          if (explanationResponse) {
+            setMessages(messages => [...messages, {
+              id: Date.now() + 2,
+              content: explanationResponse,
+              sender: 'bot' as const
+            }])
+          }
+        } else if (!showCode) {
+          // どちらもチェックされていない場合
+          setMessages(messages => [...messages, {
+            id: Date.now() + 1,
+            content: "コードを実行しました！",
+            sender: 'bot' as const
+          }])
+        }
+      } else {
+        setMessages(messages => [...messages, {
+          id: Date.now() + 1,
+          content: "申し訳ありません。コードの生成中にエラーが発生しました。",
+          sender: 'bot' as const
+        }])
+      }
     } catch (error) {
       console.error('Error:', error)
-      setMessages(prev => [...prev, {
+      setMessages(messages => [...messages, {
         id: Date.now() + 1,
         content: "申し訳ありません。エラーが発生しました。",
-        sender: 'bot'
+        sender: 'bot' as const
       }])
     } finally {
       setIsLoading(false)
@@ -80,6 +118,14 @@ const ChatInterface: React.FC = () => {
     setInput(text)
   }
 
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-4">
@@ -89,11 +135,19 @@ const ChatInterface: React.FC = () => {
             <Label htmlFor="check1" className="text-sm text-blue-900 font-medium">前面固定</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="check2" />
+            <Checkbox 
+              id="check2" 
+              checked={showCode}
+              onCheckedChange={(checked) => setShowCode(checked as boolean)}
+            />
             <Label htmlFor="check2" className="text-sm text-blue-900 font-medium">コード表示</Label>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox id="check3" />
+            <Checkbox 
+              id="check3"
+              checked={showChat}
+              onCheckedChange={(checked) => setShowChat(checked as boolean)}
+            />
             <Label htmlFor="check3" className="text-sm text-blue-900 font-medium">チャット応答</Label>
           </div>
         </div>
@@ -107,25 +161,32 @@ const ChatInterface: React.FC = () => {
                 className={`flex items-start gap-2 ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
               >
                 {message.sender === 'bot' && (
-                  <div className="w-8 h-8 flex-shrink-0">
-                    <img
-                      src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/character-6ovD0VT18sKKqEYONeI08uvB1Oq3AH.png"
-                      alt="AI Assistant"
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
+                  message.content.includes('！') || (!message.content.includes('(')) ? (
+                    <div className="w-8 h-8 flex-shrink-0">
+                      <img
+                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/character-6ovD0VT18sKKqEYONeI08uvB1Oq3AH.png"
+                        alt="AI Assistant"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 flex-shrink-0" />
+                  )
                 )}
                 <div
                   className={`rounded-2xl px-4 py-2 max-w-[80%] ${
                     message.sender === 'user'
                       ? 'bg-blue-400/80 backdrop-blur-sm text-white'
-                      : 'bg-blue-50 text-gray-800'
+                      : message.content.includes('(') && !message.content.includes('！')
+                        ? 'bg-slate-900 text-blue-300 font-mono text-sm p-4 shadow-lg border border-blue-400/20'
+                        : 'bg-blue-50 text-gray-800'
                   }`}
                 >
                   {message.content}
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef} />
           </div>
         </div>
         <div className="p-4 border-t border-white/20 bg-white">
