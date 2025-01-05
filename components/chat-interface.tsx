@@ -197,7 +197,7 @@ const ChatInterface: React.FC = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center space-x-2">
             <Checkbox id="check1" />
-            <Label htmlFor="check1" className="text-sm text-[#000080] font-medium">前面固定</Label>
+            <Label htmlFor="check1" className="text-sm text-purple-800 font-medium">前面固定</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -205,7 +205,7 @@ const ChatInterface: React.FC = () => {
               checked={showCode}
               onCheckedChange={(checked) => setShowCode(checked as boolean)}
             />
-            <Label htmlFor="check2" className="text-sm text-[#000080] font-medium">コード表示</Label>
+            <Label htmlFor="check2" className="text-sm text-purple-800 font-medium">コード表示</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -213,7 +213,7 @@ const ChatInterface: React.FC = () => {
               checked={showChat}
               onCheckedChange={(checked) => setShowChat(checked as boolean)}
             />
-            <Label htmlFor="check3" className="text-sm text-[#000080] font-medium">チャット応答</Label>
+            <Label htmlFor="check3" className="text-sm text-purple-800 font-medium">チャット応答</Label>
           </div>
         </div>
       </div>
@@ -244,7 +244,7 @@ const ChatInterface: React.FC = () => {
                       ? 'bg-purple-600/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
                         ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
-                        : 'bg-purple-50 text-[#000080]'
+                        : 'bg-purple-50 text-black'
                   }`}
                 >
                   {message.content}

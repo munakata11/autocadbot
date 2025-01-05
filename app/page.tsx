@@ -115,13 +115,13 @@ export default function Home() {
       <div className="max-w-4xl mx-auto">
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <div className="relative min-h-[500px]">
-            <div className="pt-8">
-              <h1 className="text-4xl font-bold text-[#000080] mb-4 text-center">
+            <div className="pt-0">
+              <h1 className="text-4xl font-bold text-purple-800 mb-4 text-center">
                 AutoCAD Assistant
               </h1>
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
-                  <h3 className="text-sm font-medium text-[#000080] mb-2">最近のチャット履歴</h3>
+              <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
+                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4 bg-purple-50/30 backdrop-blur-sm">
+                  <h3 className="text-sm font-medium text-purple-800 mb-2">最近のチャット履歴</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const chat = chatHistory[index];
@@ -130,7 +130,7 @@ export default function Home() {
                           {chat ? (
                             <>
                               <div 
-                                className="flex-1 bg-purple-50/80 hover:bg-purple-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 overflow-hidden cursor-help transition-colors"
+                                className="flex-1 bg-purple-50/80 hover:bg-purple-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-black overflow-hidden cursor-help transition-colors"
                                 title={chat.fullText}
                                 onClick={() => handleMessageClick(chat)}
                                 style={{ cursor: 'pointer' }}
@@ -164,8 +164,8 @@ export default function Home() {
                     })}
                   </div>
                 </div>
-                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
-                  <h3 className="text-sm font-medium text-[#000080] mb-2">ピン留めメッセージ</h3>
+                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4 bg-purple-50/30 backdrop-blur-sm">
+                  <h3 className="text-sm font-medium text-purple-800 mb-2">ピン留めメッセージ</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const pinned = pinnedMessages[index];
@@ -174,7 +174,7 @@ export default function Home() {
                           {pinned ? (
                             <>
                               <div 
-                                className="flex-1 bg-purple-100/80 hover:bg-purple-200/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-purple-900 border border-purple-200 overflow-hidden cursor-help transition-colors"
+                                className="flex-1 bg-purple-100/80 hover:bg-purple-200/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-black border border-purple-200 overflow-hidden cursor-help transition-colors"
                                 title={pinned.fullText}
                                 onClick={() => handleMessageClick(pinned)}
                                 style={{ cursor: 'pointer' }}
@@ -197,7 +197,7 @@ export default function Home() {
                             </>
                           ) : (
                             <div 
-                              className="flex-1 bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200 opacity-50 overflow-hidden"
+                              className="flex-1 bg-purple-100/60 backdrop-blur-sm rounded-lg h-[34px] text-sm text-purple-900 border border-purple-200 opacity-50 overflow-hidden"
                             >
                               <div className="px-3 py-2 truncate">
                                 &nbsp;
@@ -211,7 +211,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-20 w-[17rem] h-[17rem] -mb-32">
+            <div className="absolute bottom-0 left-20 w-[17rem] h-[17rem] -mb-28">
               <img
                 src={characterImage}
                 alt="AI Assistant Character"
