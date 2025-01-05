@@ -197,7 +197,7 @@ const ChatInterface: React.FC = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center space-x-2">
             <Checkbox id="check1" />
-            <Label htmlFor="check1" className="text-sm text-purple-800 font-medium">前面固定</Label>
+            <Label htmlFor="check1" className="text-sm text-blue-800 font-medium">前面固定</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -205,7 +205,7 @@ const ChatInterface: React.FC = () => {
               checked={showCode}
               onCheckedChange={(checked) => setShowCode(checked as boolean)}
             />
-            <Label htmlFor="check2" className="text-sm text-purple-800 font-medium">コード表示</Label>
+            <Label htmlFor="check2" className="text-sm text-blue-800 font-medium">コード表示</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -213,7 +213,7 @@ const ChatInterface: React.FC = () => {
               checked={showChat}
               onCheckedChange={(checked) => setShowChat(checked as boolean)}
             />
-            <Label htmlFor="check3" className="text-sm text-purple-800 font-medium">チャット応答</Label>
+            <Label htmlFor="check3" className="text-sm text-blue-800 font-medium">チャット応答</Label>
           </div>
         </div>
       </div>
@@ -241,10 +241,10 @@ const ChatInterface: React.FC = () => {
                 <div
                   className={`rounded-3xl px-4 py-2 max-w-[80%] whitespace-pre-wrap ${
                     message.sender === 'user'
-                      ? 'bg-purple-600/80 backdrop-blur-sm text-white'
+                      ? 'bg-blue-600/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
                         ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
-                        : 'bg-purple-50 text-black'
+                        : 'bg-blue-50 text-black'
                   }`}
                 >
                   {message.content}
@@ -261,13 +261,13 @@ const ChatInterface: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="メッセージを入力..."
-              className="bg-purple-50 border-white/20 placeholder:text-gray-600"
+              className="bg-blue-50 border-white/20 placeholder:text-gray-600"
               disabled={isLoading}
             />
             <Button 
               type="submit" 
               size="icon" 
-              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
+              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
               disabled={isLoading}
             >
               <Send className="h-4 w-4" />
@@ -276,7 +276,7 @@ const ChatInterface: React.FC = () => {
             <Button 
               type="button" 
               size="icon" 
-              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
+              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
               onClick={() => {
                 setInput("")
                 inputRef.current?.focus()
@@ -292,7 +292,7 @@ const ChatInterface: React.FC = () => {
             <Button 
               type="button" 
               size="icon" 
-              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
+              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
               onClick={() => {
                 alert('音声入力機能は現在開発中です。')
               }}
@@ -302,7 +302,7 @@ const ChatInterface: React.FC = () => {
               <span className="sr-only">音声入力</span>
             </Button>
           </form>
-          <div className="mt-4 bg-purple-50 p-3 rounded-xl space-y-2">
+          <div className="mt-4 bg-blue-50 p-3 rounded-xl space-y-2">
             <div className="grid grid-cols-4 gap-2">
               <Button 
                 variant="ghost" 
