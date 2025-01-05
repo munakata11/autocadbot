@@ -227,7 +227,7 @@ const ChatInterface: React.FC = () => {
               >
                 {message.sender === 'bot' && (
                   message.content.includes('！') || (!message.content.includes('(')) ? (
-                    <div className="w-10 h-10 flex-shrink-0">
+                    <div className="w-12 h-12 flex-shrink-0">
                       <img
                         src="/images/character/character.png"
                         alt="AI Assistant"
@@ -235,7 +235,7 @@ const ChatInterface: React.FC = () => {
                       />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 flex-shrink-0" />
+                    <div className="w-12 h-12 flex-shrink-0" />
                   )
                 )}
                 <div
