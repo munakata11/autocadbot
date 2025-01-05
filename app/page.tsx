@@ -53,11 +53,13 @@ export default function Home() {
       }, 3000);
     };
 
-    const handleGroqResponse = () => {
-      if (!isWaitingForDeepseek.current) return;
+    const handleResponseComplete = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
       
+      isWaitingForDeepseek.current = false;
       timerRef.current = setTimeout(() => {
-        if (isWaitingForDeepseek.current) return;
         setCharacterImage("/images/character/character.png");
         timerRef.current = null;
       }, 3000);
@@ -65,12 +67,12 @@ export default function Home() {
 
     window.addEventListener('newChat' as any, handleNewChat);
     window.addEventListener('deepseekResponse' as any, handleDeepseekResponse);
-    window.addEventListener('groqResponse' as any, handleGroqResponse);
+    window.addEventListener('responseComplete' as any, handleResponseComplete);
     
     return () => {
       window.removeEventListener('newChat' as any, handleNewChat);
       window.removeEventListener('deepseekResponse' as any, handleDeepseekResponse);
-      window.removeEventListener('groqResponse' as any, handleGroqResponse);
+      window.removeEventListener('responseComplete' as any, handleResponseComplete);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -114,12 +116,12 @@ export default function Home() {
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <div className="relative min-h-[500px]">
             <div className="pt-8">
-              <h1 className="text-4xl font-bold text-blue-900 mb-4 text-center">
+              <h1 className="text-4xl font-bold text-[#000080] mb-4 text-center">
                 AutoCAD Assistant
               </h1>
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">最近のチャット履歴</h3>
+                  <h3 className="text-sm font-medium text-[#000080] mb-2">最近のチャット履歴</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const chat = chatHistory[index];
@@ -163,7 +165,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">ピン留めメッセージ</h3>
+                  <h3 className="text-sm font-medium text-[#000080] mb-2">ピン留めメッセージ</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const pinned = pinnedMessages[index];
@@ -209,7 +211,7 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-24 w-[17rem] h-[17rem] -mb-32">
+            <div className="absolute bottom-0 left-20 w-[17rem] h-[17rem] -mb-32">
               <img
                 src={characterImage}
                 alt="AI Assistant Character"

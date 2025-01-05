@@ -149,13 +149,10 @@ const ChatInterface: React.FC = () => {
               sender: 'bot' as const
             }])
           }
-        } else if (!showCode) {
-          // どちらもチェックされていない場合
-          setMessages(messages => [...messages, {
-            id: Date.now() + 1,
-            content: "コードを実行しました！",
-            sender: 'bot' as const
-          }])
+        } else {
+          // チャット応答がオフの場合、応答完了イベントを発火
+          const responseCompleteEvent = new CustomEvent('responseComplete');
+          window.dispatchEvent(responseCompleteEvent);
         }
       } else {
         setMessages(messages => [...messages, {
@@ -200,7 +197,7 @@ const ChatInterface: React.FC = () => {
         <div className="flex items-center gap-8">
           <div className="flex items-center space-x-2">
             <Checkbox id="check1" />
-            <Label htmlFor="check1" className="text-sm text-blue-900 font-medium">前面固定</Label>
+            <Label htmlFor="check1" className="text-sm text-[#000080] font-medium">前面固定</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -208,7 +205,7 @@ const ChatInterface: React.FC = () => {
               checked={showCode}
               onCheckedChange={(checked) => setShowCode(checked as boolean)}
             />
-            <Label htmlFor="check2" className="text-sm text-blue-900 font-medium">コード表示</Label>
+            <Label htmlFor="check2" className="text-sm text-[#000080] font-medium">コード表示</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
@@ -216,7 +213,7 @@ const ChatInterface: React.FC = () => {
               checked={showChat}
               onCheckedChange={(checked) => setShowChat(checked as boolean)}
             />
-            <Label htmlFor="check3" className="text-sm text-blue-900 font-medium">チャット応答</Label>
+            <Label htmlFor="check3" className="text-sm text-[#000080] font-medium">チャット応答</Label>
           </div>
         </div>
       </div>
@@ -246,8 +243,8 @@ const ChatInterface: React.FC = () => {
                     message.sender === 'user'
                       ? 'bg-blue-400/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
-                        ? 'bg-slate-900 text-blue-300 font-mono text-sm p-4 shadow-lg border border-blue-400/20'
-                        : 'bg-blue-50 text-gray-800'
+                        ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
+                        : 'bg-blue-50 text-[#000080]'
                   }`}
                 >
                   {message.content}
