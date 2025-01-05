@@ -241,7 +241,7 @@ const ChatInterface: React.FC = () => {
                 <div
                   className={`rounded-3xl px-4 py-2 max-w-[80%] whitespace-pre-wrap ${
                     message.sender === 'user'
-                      ? 'bg-purple-400/80 backdrop-blur-sm text-white'
+                      ? 'bg-purple-600/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
                         ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
                         : 'bg-purple-50 text-[#000080]'
