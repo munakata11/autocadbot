@@ -15,6 +15,7 @@ export default function Home() {
   const [pinnedMessages, setPinnedMessages] = useState<ChatItem[]>([]);
 
   const [characterImage, setCharacterImage] = useState("/images/character/character.png");
+  const [characterMessage, setCharacterMessage] = useState("AutoCADの操作をお手伝いします！");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForDeepseek = useRef(false);
@@ -38,6 +39,7 @@ export default function Home() {
       
       isWaitingForDeepseek.current = true;
       setCharacterImage("/images/character/character3.png");
+      setCharacterMessage("コードを生成しています！");
     };
 
     const handleDeepseekResponse = () => {
@@ -47,8 +49,10 @@ export default function Home() {
       
       isWaitingForDeepseek.current = false;
       setCharacterImage("/images/character/character2.png");
+      setCharacterMessage("コードの説明をしますね！");
       timerRef.current = setTimeout(() => {
         setCharacterImage("/images/character/character.png");
+        setCharacterMessage("AutoCADの操作をお手伝いします！");
         timerRef.current = null;
       }, 3000);
     };
@@ -61,6 +65,7 @@ export default function Home() {
       isWaitingForDeepseek.current = false;
       timerRef.current = setTimeout(() => {
         setCharacterImage("/images/character/character.png");
+        setCharacterMessage("AutoCADの操作をお手伝いします！");
         timerRef.current = null;
       }, 3000);
     };
@@ -116,11 +121,11 @@ export default function Home() {
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <div className="relative min-h-[500px]">
             <div className="pt-0">
-              <h1 className="text-4xl font-bold text-blue-800 mb-4 text-center">
+              <h1 className="text-4xl font-bold text-blue-500 mb-4 text-center [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]">
                 AutoCAD Assistant
               </h1>
               <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
-                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
+                <div className="space-y-3 border-2 border-black rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
                   <h3 className="text-sm font-medium text-blue-800 mb-2">最近のチャット履歴</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
@@ -142,11 +147,10 @@ export default function Home() {
                               <button 
                                 onClick={() => handlePin(chat)}
                                 className="text-blue-600 hover:text-blue-800 flex-shrink-0"
-                                title="このメッセージをピン留めする"
+                                title="このメッセージをブックマークする"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <line x1="12" y1="17" x2="12" y2="22"/>
-                                  <path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/>
+                                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
                                 </svg>
                               </button>
                             </>
@@ -164,8 +168,8 @@ export default function Home() {
                     })}
                   </div>
                 </div>
-                <div className="space-y-3 border border-blue-900/20 rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">ピン留めメッセージ</h3>
+                <div className="space-y-3 border-2 border-black rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
+                  <h3 className="text-sm font-medium text-blue-800 mb-2">ブックマーク</h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const pinned = pinnedMessages[index];
@@ -186,12 +190,11 @@ export default function Home() {
                               <button 
                                 onClick={() => handleUnpin(pinned)}
                                 className="text-red-600 hover:text-red-800 flex-shrink-0"
-                                title="ピン留めを解除"
+                                title="ピックマークを解除"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M3 6h18"/>
-                                  <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                                  <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                  <path d="M18 6L6 18"></path>
+                                  <path d="M6 6l12 12"></path>
                                 </svg>
                               </button>
                             </>
@@ -211,12 +214,20 @@ export default function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute bottom-0 left-20 w-[17rem] h-[17rem] -mb-28">
-              <img
-                src={characterImage}
-                alt="AI Assistant Character"
-                className="w-full h-full object-contain"
-              />
+            <div className="absolute bottom-0 -left-6 flex items-end">
+              <div className="w-[17rem] h-[17rem] -mb-[7.875rem]">
+                <img
+                  src={characterImage}
+                  alt="AI Assistant Character"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="relative mb-12 -ml-10 mr-4">
+                <div className="bg-white rounded-2xl p-3 shadow-lg border-2 border-black">
+                  <div className="absolute left-0 bottom-4 transform -translate-x-2 rotate-45 w-4 h-4 bg-white border-l-2 border-b-2 border-black"></div>
+                  <p className="text-blue-800 text-sm">{characterMessage}</p>
+                </div>
+              </div>
             </div>
           </div>
           <div className="relative">

@@ -217,7 +217,7 @@ const ChatInterface: React.FC = () => {
           </div>
         </div>
       </div>
-      <Card className="w-full bg-white/20 backdrop-blur-sm shadow-lg border-0 rounded-3xl overflow-hidden">
+      <Card className="w-full bg-white/20 backdrop-blur-sm shadow-lg border-2 border-black rounded-3xl overflow-hidden">
         <div className="h-[380px] p-4 overflow-y-auto bg-white">
           <div className="space-y-4">
             {messages.map((message) => (
