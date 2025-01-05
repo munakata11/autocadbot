@@ -244,7 +244,7 @@ const ChatInterface: React.FC = () => {
                       ? 'bg-purple-400/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
                         ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
-                        : 'bg-blue-50 text-[#000080]'
+                        : 'bg-purple-50 text-[#000080]'
                   }`}
                 >
                   {message.content}
@@ -261,7 +261,7 @@ const ChatInterface: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="メッセージを入力..."
-              className="bg-blue-50 border-white/20 placeholder:text-gray-600"
+              className="bg-purple-50 border-white/20 placeholder:text-gray-600"
               disabled={isLoading}
             />
             <Button 
@@ -302,7 +302,7 @@ const ChatInterface: React.FC = () => {
               <span className="sr-only">音声入力</span>
             </Button>
           </form>
-          <div className="mt-4 bg-blue-50 p-3 rounded-xl space-y-2">
+          <div className="mt-4 bg-purple-50 p-3 rounded-xl space-y-2">
             <div className="grid grid-cols-4 gap-2">
               <Button 
                 variant="ghost" 
