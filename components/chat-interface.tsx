@@ -33,9 +33,47 @@ const ChatInterface: React.FC = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    const handleCustomMessage = (event: CustomEvent) => {
+      setMessages([{
+        id: 1,
+        content: "AutoCADで実行したい動作を入力してください！",
+        sender: 'bot'
+      }]);
+    };
+
+    const handleUpdateInput = (event: CustomEvent<{ value: string }>) => {
+      const newValue = event.detail.value;
+      setInput(newValue);
+    };
+
+    window.addEventListener('clearChat' as any, handleCustomMessage);
+    window.addEventListener('updateInput' as any, handleUpdateInput);
+    
+    return () => {
+      window.removeEventListener('clearChat' as any, handleCustomMessage);
+      window.removeEventListener('updateInput' as any, handleUpdateInput);
+    };
+  }, []);
+
+  // input値が変更されたときに入力欄を更新
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.value = input;
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(input.length, input.length);
+    }
+  }, [input]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return
+
+    // チャット履歴に追加するイベントを発火
+    const newChatEvent = new CustomEvent('newChat', {
+      detail: { message: input.trim() }
+    });
+    window.dispatchEvent(newChatEvent);
 
     const userMessage: Message = {
       id: Date.now(),
@@ -60,6 +98,10 @@ const ChatInterface: React.FC = () => {
       
       if (codeResponse) {
         if (showCode) {
+          // Groqレスポンス完了時にイベントを発火
+          const groqEvent = new CustomEvent('groqResponse');
+          window.dispatchEvent(groqEvent);
+          
           setMessages(messages => [...messages, {
             id: Date.now() + 1,
             content: codeResponse,
@@ -97,6 +139,10 @@ const ChatInterface: React.FC = () => {
           const explanationResponse = await generateDeepseekResponse(explanationMessages)
           
           if (explanationResponse) {
+            // Deepseekレスポンス時にイベントを発火
+            const deepseekEvent = new CustomEvent('deepseekResponse');
+            window.dispatchEvent(deepseekEvent);
+            
             setMessages(messages => [...messages, {
               id: Date.now() + 2,
               content: explanationResponse,
@@ -186,7 +232,7 @@ const ChatInterface: React.FC = () => {
                   message.content.includes('！') || (!message.content.includes('(')) ? (
                     <div className="w-8 h-8 flex-shrink-0">
                       <img
-                        src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/character-6ovD0VT18sKKqEYONeI08uvB1Oq3AH.png"
+                        src="/images/character/character.png"
                         alt="AI Assistant"
                         className="w-full h-full object-contain"
                       />

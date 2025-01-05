@@ -1,7 +1,7 @@
 "use client"
 
 import ChatInterface from '@/components/chat-interface'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface ChatItem {
   id: number;
@@ -10,41 +10,72 @@ interface ChatItem {
 }
 
 export default function Home() {
-  const [chatHistory, setChatHistory] = useState<ChatItem[]>([
-    {
-      id: 1,
-      text: "図面の寸法入力について質問しました...",
-      fullText: "図面の寸法入力について質問しました。寸法スタイルの設定方法や、関連寸法の作成方法などについて詳しく確認しました。"
-    },
-    {
-      id: 2,
-      text: "ブロックの作成方法を確認しました...",
-      fullText: "ブロックの作成方法を確認しました。属性の設定や動的ブロックの作成手順について学びました。"
-    },
-    {
-      id: 3,
-      text: "印刷設定の手順を確認しました...",
-      fullText: "印刷設定の手順を確認しました。用紙サイズやスケール、線の太さなどの設定方法を確認しました。"
-    }
-  ]);
+  const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
 
-  const [pinnedMessages, setPinnedMessages] = useState<ChatItem[]>([
-    {
-      id: 1,
-      text: "よく使うショートカットキー一覧...",
-      fullText: "よく使うショートカットキー一覧：移動(M)、コピー(CO)、トリム(TR)、延長(EX)、オフセット(O)など、作図効率を上げる重要なコマンド"
-    },
-    {
-      id: 2,
-      text: "図面テンプレートの保存場所...",
-      fullText: "図面テンプレートの保存場所：C:\\Users\\[ユーザー名]\\AppData\\Local\\Autodesk\\AutoCAD 2024\\R24.0\\[言語]\\Template"
-    },
-    {
-      id: 3,
-      text: "プリンター設定の初期値...",
-      fullText: "プリンター設定の初期値：用紙サイズ(A3)、尺度(1:50)、線の太さ(0.5mm)、モノクロ印刷設定"
-    }
-  ]);
+  const [pinnedMessages, setPinnedMessages] = useState<ChatItem[]>([]);
+
+  const [characterImage, setCharacterImage] = useState("/images/character/character.png");
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const isWaitingForDeepseek = useRef(false);
+
+  useEffect(() => {
+    const handleNewChat = (event: CustomEvent<{ message: string }>) => {
+      const newChat: ChatItem = {
+        id: Date.now(),
+        text: event.detail.message,
+        fullText: event.detail.message
+      };
+
+      setChatHistory(prevHistory => {
+        const newHistory = [newChat, ...prevHistory].slice(0, 5);
+        return newHistory;
+      });
+      
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      
+      isWaitingForDeepseek.current = true;
+      setCharacterImage("/images/character/character3.png");
+    };
+
+    const handleDeepseekResponse = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+      
+      isWaitingForDeepseek.current = false;
+      setCharacterImage("/images/character/character2.png");
+      timerRef.current = setTimeout(() => {
+        setCharacterImage("/images/character/character.png");
+        timerRef.current = null;
+      }, 3000);
+    };
+
+    const handleGroqResponse = () => {
+      if (!isWaitingForDeepseek.current) return;
+      
+      timerRef.current = setTimeout(() => {
+        if (isWaitingForDeepseek.current) return;
+        setCharacterImage("/images/character/character.png");
+        timerRef.current = null;
+      }, 3000);
+    };
+
+    window.addEventListener('newChat' as any, handleNewChat);
+    window.addEventListener('deepseekResponse' as any, handleDeepseekResponse);
+    window.addEventListener('groqResponse' as any, handleGroqResponse);
+    
+    return () => {
+      window.removeEventListener('newChat' as any, handleNewChat);
+      window.removeEventListener('deepseekResponse' as any, handleDeepseekResponse);
+      window.removeEventListener('groqResponse' as any, handleGroqResponse);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
 
   const handlePin = (chatItem: ChatItem) => {
     if (pinnedMessages.length < 5) {
@@ -63,11 +94,18 @@ export default function Home() {
     setPinnedMessages(pinnedMessages.filter(item => item.id !== pinnedItem.id));
   };
 
+  const handleMessageClick = (message: ChatItem) => {
+    const updateEvent = new CustomEvent('updateInput', { 
+      detail: { value: message.fullText }
+    });
+    window.dispatchEvent(updateEvent);
+  };
+
   return (
     <div 
       className="min-h-screen p-8"
       style={{
-        backgroundImage: 'url("https://hebbkx1anhila5yf.public.blob.vercel-storage.com/haikei1-VBjFENRnUMVqm56SaO4P7NIOgitqL9.png")',
+        backgroundImage: 'url("/images/background/haikei1.png")',
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}
@@ -92,6 +130,8 @@ export default function Home() {
                               <div 
                                 className="flex-1 bg-blue-50/80 hover:bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 overflow-hidden cursor-help transition-colors"
                                 title={chat.fullText}
+                                onClick={() => handleMessageClick(chat)}
+                                style={{ cursor: 'pointer' }}
                               >
                                 <div className="px-3 py-2 truncate">
                                   {chat.text}
@@ -134,6 +174,8 @@ export default function Home() {
                               <div 
                                 className="flex-1 bg-blue-100/80 hover:bg-blue-200/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-blue-900 border border-blue-200 overflow-hidden cursor-help transition-colors"
                                 title={pinned.fullText}
+                                onClick={() => handleMessageClick(pinned)}
+                                style={{ cursor: 'pointer' }}
                               >
                                 <div className="px-3 py-2 truncate">
                                   {pinned.text}
@@ -169,7 +211,7 @@ export default function Home() {
             </div>
             <div className="absolute bottom-0 left-24 w-[17rem] h-[17rem] -mb-32">
               <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/character-6ovD0VT18sKKqEYONeI08uvB1Oq3AH.png"
+                src={characterImage}
                 alt="AI Assistant Character"
                 className="w-full h-full object-contain"
               />
