@@ -241,7 +241,7 @@ const ChatInterface: React.FC = () => {
                 <div
                   className={`rounded-3xl px-4 py-2 max-w-[80%] whitespace-pre-wrap ${
                     message.sender === 'user'
-                      ? 'bg-blue-400/80 backdrop-blur-sm text-white'
+                      ? 'bg-purple-400/80 backdrop-blur-sm text-white'
                       : message.content.includes('(') && !message.content.includes('！')
                         ? 'bg-gray-100 text-[#000080] font-mono text-sm p-4 shadow-lg border border-gray-200'
                         : 'bg-blue-50 text-[#000080]'
@@ -267,7 +267,7 @@ const ChatInterface: React.FC = () => {
             <Button 
               type="submit" 
               size="icon" 
-              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
+              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
               disabled={isLoading}
             >
               <Send className="h-4 w-4" />
@@ -276,7 +276,7 @@ const ChatInterface: React.FC = () => {
             <Button 
               type="button" 
               size="icon" 
-              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
+              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
               onClick={() => {
                 setInput("")
                 inputRef.current?.focus()
@@ -292,7 +292,7 @@ const ChatInterface: React.FC = () => {
             <Button 
               type="button" 
               size="icon" 
-              className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
+              className="bg-purple-400/80 hover:bg-purple-500/80 backdrop-blur-sm"
               onClick={() => {
                 alert('音声入力機能は現在開発中です。')
               }}
