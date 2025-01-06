@@ -196,24 +196,26 @@ const ChatInterface: React.FC = () => {
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <div className="flex items-center space-x-2">
-            <Checkbox id="check1" />
-            <Label htmlFor="check1" className="text-sm text-blue-800 font-medium">前面固定</Label>
+            <Checkbox id="check1" className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700" />
+            <Label htmlFor="check1" className="text-sm text-black font-medium">前面固定</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="check2" 
               checked={showCode}
               onCheckedChange={(checked) => setShowCode(checked as boolean)}
+              className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
             />
-            <Label htmlFor="check2" className="text-sm text-blue-800 font-medium">コード表示</Label>
+            <Label htmlFor="check2" className="text-sm text-black font-medium">コード表示</Label>
           </div>
           <div className="flex items-center space-x-2">
             <Checkbox 
               id="check3"
               checked={showChat}
               onCheckedChange={(checked) => setShowChat(checked as boolean)}
+              className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
             />
-            <Label htmlFor="check3" className="text-sm text-blue-800 font-medium">チャット応答</Label>
+            <Label htmlFor="check3" className="text-sm text-black font-medium">チャット応答</Label>
           </div>
         </div>
       </div>
@@ -308,6 +310,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("ユーザー選択")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「ユーザー選択」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                ユーザー選択 
@@ -316,6 +327,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("原点(0,0)")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「原点(0,0)」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                原点(0,0)
@@ -324,6 +344,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("四角形")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「四角形」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                四角形 
@@ -332,6 +361,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("円")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「円」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                 円
@@ -342,6 +380,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("選択し")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「選択し」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
               選択し 
@@ -350,6 +397,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("描いて")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「描いて」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                描いて 
@@ -358,6 +414,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("画層")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「画層」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
                画層 
@@ -366,6 +431,15 @@ const ChatInterface: React.FC = () => {
                 variant="ghost" 
                 className="rounded-full text-sm"
                 onClick={() => handleShortcutClick("寸法")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「寸法」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
                 disabled={isLoading}
               >
               寸法 

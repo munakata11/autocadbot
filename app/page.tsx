@@ -16,6 +16,7 @@ export default function Home() {
 
   const [characterImage, setCharacterImage] = useState("/images/character/character.png");
   const [characterMessage, setCharacterMessage] = useState("AutoCADの操作をお手伝いします！");
+  const [defaultMessage] = useState("AutoCADの操作をお手伝いします！");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForDeepseek = useRef(false);
@@ -70,19 +71,33 @@ export default function Home() {
       }, 3000);
     };
 
+    const handleHoverMessage = (event: CustomEvent<{ message: string }>) => {
+      setCharacterMessage(event.detail.message);
+    };
+
+    const handleHoverEnd = () => {
+      if (!isWaitingForDeepseek.current) {
+        setCharacterMessage(defaultMessage);
+      }
+    };
+
     window.addEventListener('newChat' as any, handleNewChat);
     window.addEventListener('deepseekResponse' as any, handleDeepseekResponse);
     window.addEventListener('responseComplete' as any, handleResponseComplete);
+    window.addEventListener('shortcutHover' as any, handleHoverMessage);
+    window.addEventListener('shortcutHoverEnd' as any, handleHoverEnd);
     
     return () => {
       window.removeEventListener('newChat' as any, handleNewChat);
       window.removeEventListener('deepseekResponse' as any, handleDeepseekResponse);
       window.removeEventListener('responseComplete' as any, handleResponseComplete);
+      window.removeEventListener('shortcutHover' as any, handleHoverMessage);
+      window.removeEventListener('shortcutHoverEnd' as any, handleHoverEnd);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
     };
-  }, []);
+  }, [defaultMessage]);
 
   const handlePin = (chatItem: ChatItem) => {
     if (pinnedMessages.length < 5) {
@@ -121,12 +136,18 @@ export default function Home() {
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <div className="relative min-h-[500px]">
             <div className="pt-0">
-              <h1 className="text-4xl font-bold text-blue-500 mb-4 text-center [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]">
-                AutoCAD Assistant
+              <h1 className="text-4xl font-bold text-blue-400 mb-4 text-center [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]">
+                <span className="text-red-500">A</span>utoCAD Assistant
               </h1>
-              <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
+              <div className="grid grid-cols-2 gap-4 mb-4 mt-6">
                 <div className="space-y-3 border-2 border-black rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">最近のチャット履歴</h3>
+                  <h3 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
+                    <span>最近のチャット履歴</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                    </svg>
+                  </h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const chat = chatHistory[index];
@@ -169,7 +190,12 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="space-y-3 border-2 border-black rounded-2xl p-4 bg-blue-50/30 backdrop-blur-sm">
-                  <h3 className="text-sm font-medium text-blue-800 mb-2">ブックマーク</h3>
+                  <h3 className="text-sm font-medium text-blue-800 mb-2 flex items-center gap-2">
+                    <span>ブックマーク</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-rose-500">
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                    </svg>
+                  </h3>
                   <div className="space-y-2">
                     {[...Array(5)].map((_, index) => {
                       const pinned = pinnedMessages[index];
@@ -189,8 +215,8 @@ export default function Home() {
                               </div>
                               <button 
                                 onClick={() => handleUnpin(pinned)}
-                                className="text-red-600 hover:text-red-800 flex-shrink-0"
-                                title="ピックマークを解除"
+                                className="text-rose-500 hover:text-rose-700 flex-shrink-0"
+                                title="ブックマークを解除"
                               >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                   <path d="M18 6L6 18"></path>
@@ -222,10 +248,10 @@ export default function Home() {
                   className="w-full h-full object-contain"
                 />
               </div>
-              <div className="relative mb-12 -ml-10 mr-4">
-                <div className="bg-white rounded-2xl p-3 shadow-lg border-2 border-black">
+              <div className="relative mb-10 -ml-10 mr-4">
+                <div className="bg-white rounded-2xl p-3 shadow-lg border-2 border-black w-[200px]">
                   <div className="absolute left-0 bottom-4 transform -translate-x-2 rotate-45 w-4 h-4 bg-white border-l-2 border-b-2 border-black"></div>
-                  <p className="text-blue-800 text-sm">{characterMessage}</p>
+                  <p className="text-blue-800 text-sm break-words">{characterMessage}</p>
                 </div>
               </div>
             </div>
