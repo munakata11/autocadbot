@@ -15,8 +15,8 @@ export default function Home() {
   const [pinnedMessages, setPinnedMessages] = useState<ChatItem[]>([]);
 
   const [characterImage, setCharacterImage] = useState("/images/character/character.png");
-  const [characterMessage, setCharacterMessage] = useState("AutoCADの操作をお手伝いします！");
-  const [defaultMessage] = useState("AutoCADの操作をお手伝いします！");
+  const [characterMessage, setCharacterMessage] = useState("作図したい図形や実行したいコマンドを指示してください！");
+  const [defaultMessage] = useState("作図したい図形や実行したいコマンドを指示してください！");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForDeepseek = useRef(false);
@@ -40,7 +40,7 @@ export default function Home() {
       
       isWaitingForDeepseek.current = true;
       setCharacterImage("/images/character/character3.png");
-      setCharacterMessage("コードを生成しています！");
+      setCharacterMessage("コードを実行しました！");
     };
 
     const handleDeepseekResponse = () => {
@@ -50,10 +50,10 @@ export default function Home() {
       
       isWaitingForDeepseek.current = false;
       setCharacterImage("/images/character/character2.png");
-      setCharacterMessage("コードの説明をしますね！");
+      setCharacterMessage("こんな動作が実行されましたよ");
       timerRef.current = setTimeout(() => {
         setCharacterImage("/images/character/character.png");
-        setCharacterMessage("AutoCADの操作をお手伝いします！");
+        setCharacterMessage("作図したい図形や実行したいコマンドを指示してください！");
         timerRef.current = null;
       }, 3000);
     };
@@ -159,6 +159,15 @@ export default function Home() {
                                 className="flex-1 bg-blue-50/80 hover:bg-blue-100/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-black overflow-hidden cursor-help transition-colors"
                                 title={chat.fullText}
                                 onClick={() => handleMessageClick(chat)}
+                                onMouseEnter={() => {
+                                  const event = new CustomEvent('shortcutHover', {
+                                    detail: { message: `「${chat.fullText}」を入力します` }
+                                  });
+                                  window.dispatchEvent(event);
+                                }}
+                                onMouseLeave={() => {
+                                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                                }}
                                 style={{ cursor: 'pointer' }}
                               >
                                 <div className="px-3 py-2 truncate">
@@ -207,6 +216,15 @@ export default function Home() {
                                 className="flex-1 bg-blue-100/80 hover:bg-blue-200/80 backdrop-blur-sm rounded-lg h-[34px] text-sm text-black border border-blue-200 overflow-hidden cursor-help transition-colors"
                                 title={pinned.fullText}
                                 onClick={() => handleMessageClick(pinned)}
+                                onMouseEnter={() => {
+                                  const event = new CustomEvent('shortcutHover', {
+                                    detail: { message: `「${pinned.fullText}」を入力します` }
+                                  });
+                                  window.dispatchEvent(event);
+                                }}
+                                onMouseLeave={() => {
+                                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                                }}
                                 style={{ cursor: 'pointer' }}
                               >
                                 <div className="px-3 py-2 truncate">
