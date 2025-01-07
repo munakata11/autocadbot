@@ -259,7 +259,18 @@ export default function Home() {
               </div>
             </div>
             <div className="absolute bottom-0 -left-6 flex items-end">
-              <div className="w-[17rem] h-[17rem] -mb-[7.875rem]">
+              <div 
+                className="w-[17rem] h-[17rem] -mb-[7.875rem]"
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'AutoCADの操作をサポートするアシスタントです！' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
+              >
                 <img
                   src={characterImage}
                   alt="AI Assistant Character"

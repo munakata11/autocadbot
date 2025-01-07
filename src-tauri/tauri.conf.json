@@ -13,10 +13,13 @@
     "windows": [
       {
         "title": "autocadassistant",
-        "width": 880,
-        "height": 700,
+
+        "width": 940, 
+        "height": 690,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "alwaysOnTop": false,
+        "visible": true
       }
     ],
     "security": {

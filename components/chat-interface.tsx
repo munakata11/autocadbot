@@ -30,8 +30,18 @@ const ChatInterface: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [showCode, setShowCode] = useState(true)
   const [showChat, setShowChat] = useState(true)
+  const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // input値が変更されたときに入力欄を更新
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.value = input;
+      inputRef.current.focus();
+      inputRef.current.setSelectionRange(input.length, input.length);
+    }
+  }, [input]);
 
   useEffect(() => {
     const handleCustomMessage = (event: CustomEvent) => {
@@ -55,15 +65,6 @@ const ChatInterface: React.FC = () => {
       window.removeEventListener('updateInput' as any, handleUpdateInput);
     };
   }, []);
-
-  // input値が変更されたときに入力欄を更新
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.value = input;
-      inputRef.current.focus();
-      inputRef.current.setSelectionRange(input.length, input.length);
-    }
-  }, [input]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -191,31 +192,93 @@ const ChatInterface: React.FC = () => {
     scrollToBottom()
   }, [messages])
 
+  const handleAlwaysOnTop = async (checked: boolean) => {
+    try {
+      // @ts-ignore
+      if (window?.__TAURI__?.window) {
+        // @ts-ignore
+        const appWindow = await window.__TAURI__.window.getCurrent();
+        await appWindow.setAlwaysOnTop(checked);
+        setIsAlwaysOnTop(checked);
+      } else {
+        // Tauriが利用できない環境でもチェックボックスの状態は更新
+        setIsAlwaysOnTop(checked);
+      }
+    } catch (e) {
+      console.error('Failed to set always on top:', e);
+      setIsAlwaysOnTop(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between px-4">
         <div className="flex items-center gap-8">
           <div className="flex items-center space-x-2">
-            <Checkbox id="check1" className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700" />
-            <Label htmlFor="check1" className="text-sm text-black font-medium">前面固定</Label>
+            <div
+              className="flex items-center space-x-2"
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: 'ウィンドウを常に最前面に表示します' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
+            >
+              <Checkbox 
+                id="check1" 
+                checked={isAlwaysOnTop}
+                className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
+                onCheckedChange={handleAlwaysOnTop}
+              />
+              <Label htmlFor="check1" className="text-sm text-black font-medium">前面固定</Label>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="check2" 
-              checked={showCode}
-              onCheckedChange={(checked) => setShowCode(checked as boolean)}
-              className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
-            />
-            <Label htmlFor="check2" className="text-sm text-black font-medium">コード表示</Label>
+            <div
+              className="flex items-center space-x-2"
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: 'AutoLISPコードの表示/非表示を切り替えます' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
+            >
+              <Checkbox 
+                id="check2" 
+                checked={showCode}
+                onCheckedChange={(checked) => setShowCode(checked as boolean)}
+                className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
+              />
+              <Label htmlFor="check2" className="text-sm text-black font-medium">コード表示</Label>
+            </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Checkbox 
-              id="check3"
-              checked={showChat}
-              onCheckedChange={(checked) => setShowChat(checked as boolean)}
-              className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
-            />
-            <Label htmlFor="check3" className="text-sm text-black font-medium">チャット応答</Label>
+            <div
+              className="flex items-center space-x-2"
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: 'アシスタントの応答メッセージの表示/非表示を切り替えます' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
+            >
+              <Checkbox 
+                id="check3"
+                checked={showChat}
+                onCheckedChange={(checked) => setShowChat(checked as boolean)}
+                className="text-rose-700 border-rose-700 data-[state=checked]:bg-rose-700"
+              />
+              <Label htmlFor="check3" className="text-sm text-black font-medium">チャット応答</Label>
+            </div>
           </div>
         </div>
       </div>
@@ -271,6 +334,15 @@ const ChatInterface: React.FC = () => {
               size="icon" 
               className="bg-blue-400/80 hover:bg-blue-500/80 backdrop-blur-sm"
               disabled={isLoading}
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: 'メッセージを送信します' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
             >
               <Send className="h-4 w-4" />
               <span className="sr-only">送信</span>
@@ -284,6 +356,15 @@ const ChatInterface: React.FC = () => {
                 inputRef.current?.focus()
               }}
               disabled={isLoading}
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: '入力内容をクリアします' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 6L6 18"></path>
@@ -299,6 +380,15 @@ const ChatInterface: React.FC = () => {
                 alert('音声入力機能は現在開発中です。')
               }}
               disabled={isLoading}
+              onMouseEnter={() => {
+                const event = new CustomEvent('shortcutHover', {
+                  detail: { message: '音声入力モードに切り替えます（開発中）' }
+                });
+                window.dispatchEvent(event);
+              }}
+              onMouseLeave={() => {
+                window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+              }}
             >
               <Mic className="h-4 w-4" />
               <span className="sr-only">音声入力</span>
