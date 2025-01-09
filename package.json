@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"next dev\" \"npm run electron-dev\"",
+    "kill:port": "powershell -Command \"Get-Process -Id (Get-NetTCPConnection -LocalPort 3000 -ErrorAction SilentlyContinue).OwningProcess | Stop-Process -Force\" || exit 0",
+    "kill:win": "taskkill /F /IM electron.exe /T || exit 0 && taskkill /F /IM node.exe /T || exit 0",
+    "next-dev": "next dev -p 3000",
+    "electron-dev": "electron .",
+    "dev": "npm run kill:win && npm run kill:port && concurrently \"npm run next-dev\" \"wait-on tcp:3000 && npm run electron-dev\"",
     "build": "next build && electron-builder",
     "start": "next start",
-    "lint": "next lint",
-    "electron-dev": "electron .",
-    "electron": "electron ."
+    "lint": "next lint"
   },
   "main": "electron/main.js",
   "build": {
@@ -45,6 +47,7 @@
     "eslint-config-next": "14.2.16",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wait-on": "^8.0.1"
   }
 }

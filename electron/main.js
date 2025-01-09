@@ -4,8 +4,10 @@ const isDev = process.env.NODE_ENV !== 'production';
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 950,
+    height: 730,
+    resizable: false,
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: true,
@@ -22,7 +24,6 @@ function createWindow() {
     const loadURL = async () => {
       try {
         await win.loadURL(url);
-        win.webContents.openDevTools();
       } catch (err) {
         console.log('Next.jsサーバーに接続できません。再試行します...');
         setTimeout(loadURL, 1000);
