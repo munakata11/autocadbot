@@ -1,4 +1,3 @@
-
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const isDev = process.env.NODE_ENV !== 'production';
@@ -9,7 +8,9 @@ function createWindow() {
     height: 800,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true
     }
   });
 
@@ -17,7 +18,20 @@ function createWindow() {
     ? 'http://localhost:3000' 
     : `file://${path.join(__dirname, '../.next/server/pages/index.html')}`;
     
-  win.loadURL(url);
+  if (isDev) {
+    const loadURL = async () => {
+      try {
+        await win.loadURL(url);
+        win.webContents.openDevTools();
+      } catch (err) {
+        console.log('Next.jsサーバーに接続できません。再試行します...');
+        setTimeout(loadURL, 1000);
+      }
+    };
+    loadURL();
+  } else {
+    win.loadURL(url);
+  }
 }
 
 app.whenReady().then(createWindow);
