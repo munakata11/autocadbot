@@ -1,1 +1,0 @@
-["/home/runner/workspace/.local/share/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tauri-plugin-log-2.2.0/api-iife.js"]
