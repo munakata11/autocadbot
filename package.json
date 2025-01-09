@@ -3,10 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "concurrently \"next dev\" \"npm run electron-dev\"",
+    "build": "next build && electron-builder",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "electron-dev": "electron .",
+    "electron": "electron ."
+  },
+  "main": "electron/main.js",
+  "build": {
+    "appId": "com.autocadassistant",
+    "files": [
+      "electron/**/*",
+      ".next/**/*",
+      "node_modules/**/*"
+    ]
   },
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.3",
