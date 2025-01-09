@@ -7,8 +7,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Pythonスクリプトを実行して.lspファイルを保存する関数
 async function saveLispFile(content) {
   try {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `output_${timestamp}.lsp`;
+    const filename = 'direction.lsp';
     const filePath = path.join(__dirname, '..', 'lisp_files', filename);
     
     console.log('保存先ディレクトリ:', path.join(__dirname, '..', 'lisp_files'));
@@ -17,7 +16,7 @@ async function saveLispFile(content) {
     // ディレクトリが存在しない場合は作成
     await fs.mkdir(path.join(__dirname, '..', 'lisp_files'), { recursive: true });
     
-    // ファイルに内容を書き込む
+    // ファイルを上書きモードで保存
     await fs.writeFile(filePath, content, 'utf-8');
     console.log('ファイル保存成功:', filePath);
     return { success: true, filePath };

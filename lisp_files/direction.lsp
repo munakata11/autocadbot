@@ -1,0 +1,1 @@
+(setq old_osmode (getvar "osmode"))(setvar "osmode" 0)(command "RECTANG" "0,0" "5,5" "")(command "CIRCLE" "0,0" "2.5" "")(setvar "osmode" old_osmode)
