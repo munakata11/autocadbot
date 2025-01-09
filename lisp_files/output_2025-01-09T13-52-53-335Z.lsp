@@ -1,0 +1,1 @@
+(setq old_osmode (getvar "osmode"))(setvar "osmode" 0)(command "CIRCLE" "")(setvar "osmode" old_osmode)

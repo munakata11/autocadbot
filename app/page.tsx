@@ -3,6 +3,14 @@
 import ChatInterface from '@/components/chat-interface'
 import { useState, useEffect, useRef } from 'react'
 
+declare global {
+  interface Window {
+    electron?: {
+      saveLispFile: (content: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+    };
+  }
+}
+
 interface ChatItem {
   id: number;
   text: string;
@@ -43,7 +51,7 @@ export default function Home() {
       setCharacterMessage("コードを実行しました！");
     };
 
-    const handleDeepseekResponse = () => {
+    const handleDeepseekResponse = async (event: CustomEvent) => {
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
@@ -51,6 +59,26 @@ export default function Home() {
       isWaitingForDeepseek.current = false;
       setCharacterImage("/images/character/character2.png");
       setCharacterMessage("こんな動作が実行されましたよ");
+
+      // Groqの出力を.lspファイルとして保存
+      if (window.electron) {
+        try {
+          const messages = document.querySelectorAll('.bg-gray-100.text-\\[\\#000080\\]');
+          const lastLispCode = messages[messages.length - 1]?.textContent;
+          
+          if (lastLispCode) {
+            const result = await window.electron.saveLispFile(lastLispCode);
+            if (result.success) {
+              console.log('LSPファイルを保存しました:', result.filePath);
+            } else {
+              console.error('LSPファイルの保存に失敗しました:', result.error);
+            }
+          }
+        } catch (error) {
+          console.error('LSPファイルの保存中にエラーが発生しました:', error);
+        }
+      }
+
       timerRef.current = setTimeout(() => {
         setCharacterImage("/images/character/character.png");
         setCharacterMessage("作図したい図形や実行したいコマンドを指示してください！");
