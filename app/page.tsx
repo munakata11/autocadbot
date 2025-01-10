@@ -7,6 +7,10 @@ declare global {
   interface Window {
     electron?: {
       saveLispFile: (content: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+      saveHistory: (history: ChatItem[]) => Promise<{ success: boolean; error?: string }>;
+      loadHistory: () => Promise<{ success: boolean; data?: ChatItem[]; error?: string }>;
+      saveBookmarks: (bookmarks: ChatItem[]) => Promise<{ success: boolean; error?: string }>;
+      loadBookmarks: () => Promise<{ success: boolean; data?: ChatItem[]; error?: string }>;
     };
   }
 }
@@ -19,12 +23,11 @@ interface ChatItem {
 
 export default function Home() {
   const [chatHistory, setChatHistory] = useState<ChatItem[]>([]);
-
   const [pinnedMessages, setPinnedMessages] = useState<ChatItem[]>([]);
-
   const [characterImage, setCharacterImage] = useState("/images/character/character.png");
   const [characterMessage, setCharacterMessage] = useState("作図したい図形や実行したいコマンドを指示してください！");
   const [defaultMessage] = useState("作図したい図形や実行したいコマンドを指示してください！");
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isWaitingForDeepseek = useRef(false);
@@ -39,6 +42,11 @@ export default function Home() {
 
       setChatHistory(prevHistory => {
         const newHistory = [newChat, ...prevHistory].slice(0, 5);
+        if (window.electron) {
+          window.electron.saveHistory(newHistory).catch(error => {
+            console.error('チャット履歴の保存に失敗しました:', error);
+          });
+        }
         return newHistory;
       });
       
@@ -127,21 +135,90 @@ export default function Home() {
     };
   }, [defaultMessage]);
 
+  // 初期データの読み込み
+  useEffect(() => {
+    const loadData = async () => {
+      if (window.electron && !isInitialized) {
+        try {
+          console.log('初期データを読み込みます...');
+          const historyResult = await window.electron.loadHistory();
+          if (historyResult.success && historyResult.data) {
+            console.log('履歴データを読み込みました:', historyResult.data);
+            setChatHistory(historyResult.data);
+          }
+
+          const bookmarksResult = await window.electron.loadBookmarks();
+          if (bookmarksResult.success && bookmarksResult.data) {
+            console.log('ブックマークデータを読み込みました:', bookmarksResult.data);
+            setPinnedMessages(bookmarksResult.data);
+          }
+          setIsInitialized(true);
+        } catch (error) {
+          console.error('データの読み込みに失敗しました:', error);
+        }
+      }
+    };
+
+    loadData();
+  }, [isInitialized]);
+
+  // チャット履歴の保存
+  useEffect(() => {
+    if (window.electron && isInitialized) {
+      console.log('チャット履歴を保存します:', chatHistory);
+      window.electron.saveHistory(chatHistory).catch(error => {
+        console.error('チャット履歴の保存に失敗しました:', error);
+      });
+    }
+  }, [chatHistory, isInitialized]);
+
+  // ブックマークの保存
+  useEffect(() => {
+    if (window.electron && isInitialized) {
+      console.log('ブックマークを保存します:', pinnedMessages);
+      window.electron.saveBookmarks(pinnedMessages).catch(error => {
+        console.error('ブックマークの保存に失敗しました:', error);
+      });
+    }
+  }, [pinnedMessages, isInitialized]);
+
   const handlePin = (chatItem: ChatItem) => {
     if (pinnedMessages.length < 5) {
-      setPinnedMessages([...pinnedMessages, {
+      const newPinnedMessages = [...pinnedMessages, {
         id: Date.now(),
         text: chatItem.text,
         fullText: chatItem.fullText
-      }]);
-      setChatHistory(chatHistory.filter(item => item.id !== chatItem.id));
+      }];
+      setPinnedMessages(newPinnedMessages);
+      
+      if (window.electron) {
+        window.electron.saveBookmarks(newPinnedMessages).catch(error => {
+          console.error('ブックマークの保存に失敗しました:', error);
+        });
+      }
+      
+      const newHistory = chatHistory.filter(item => item.id !== chatItem.id);
+      setChatHistory(newHistory);
+      
+      if (window.electron) {
+        window.electron.saveHistory(newHistory).catch(error => {
+          console.error('チャット履歴の保存に失敗しました:', error);
+        });
+      }
     } else {
       alert('ピン留めは5件までです。既存のピン留めを削除してから試してください。');
     }
   };
 
   const handleUnpin = (pinnedItem: ChatItem) => {
-    setPinnedMessages(pinnedMessages.filter(item => item.id !== pinnedItem.id));
+    const newPinnedMessages = pinnedMessages.filter(item => item.id !== pinnedItem.id);
+    setPinnedMessages(newPinnedMessages);
+    
+    if (window.electron) {
+      window.electron.saveBookmarks(newPinnedMessages).catch(error => {
+        console.error('ブックマークの保存に失敗しました:', error);
+      });
+    }
   };
 
   const handleMessageClick = (message: ChatItem) => {

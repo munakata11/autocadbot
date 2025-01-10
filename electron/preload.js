@@ -12,5 +12,17 @@ contextBridge.exposeInMainWorld('electron', {
   },
   saveLispFile: (content) => {
     return ipcRenderer.invoke('save-lisp-file', content);
+  },
+  saveHistory: (history) => {
+    return ipcRenderer.invoke('save-history', history);
+  },
+  loadHistory: () => {
+    return ipcRenderer.invoke('load-history');
+  },
+  saveBookmarks: (bookmarks) => {
+    return ipcRenderer.invoke('save-bookmarks', bookmarks);
+  },
+  loadBookmarks: () => {
+    return ipcRenderer.invoke('load-bookmarks');
   }
 }); 
