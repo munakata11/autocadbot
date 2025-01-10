@@ -38,3 +38,7 @@ next-env.d.ts
 # データファイル
 /data/
 /lisp_files/
+
+# release
+/release
+/dist
