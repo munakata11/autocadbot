@@ -1,0 +1,46 @@
+{
+  "appId": "com.autocadassistant.app",
+  "productName": "AutoCAD Assistant",
+  "asar": true,
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "electron/**/*",
+    "dist/**/*",
+    "public/**/*",
+    "package.json",
+    "node_modules/**/*"
+  ],
+  "extraResources": [
+    {
+      "from": "dist/app",
+      "to": "app",
+      "filter": ["**/*"]
+    },
+    {
+      "from": "lisp_files",
+      "to": "lisp_files"
+    },
+    {
+      "from": "data",
+      "to": "data"
+    }
+  ],
+  "win": {
+    "icon": "public/images/icon/icon.ico",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ]
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "createDesktopShortcut": true,
+    "installerIcon": "public/images/icon/icon.ico",
+    "uninstallerIcon": "public/images/icon/icon.ico"
+  }
+} 
