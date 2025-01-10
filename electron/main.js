@@ -34,6 +34,8 @@ function createWindow() {
     height: 730,
     resizable: false,
     autoHideMenuBar: true,
+    title: 'AutoCAD Assistant',
+    icon: path.join(__dirname, '..', 'public', 'images', 'icon', 'icon.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -48,7 +50,6 @@ function createWindow() {
   console.log('Loading URL:', startUrl);
 
   if (isDev) {
-    mainWindow.webContents.openDevTools();
     const loadURL = async () => {
       try {
         await mainWindow.loadURL(startUrl);

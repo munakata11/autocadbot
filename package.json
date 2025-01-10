@@ -41,5 +41,13 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5",
     "wait-on": "^8.0.1"
+  },
+  "build": {
+    "appId": "com.autocadassistant.app",
+    "productName": "AutoCAD Assistant",
+    "win": {
+      "icon": "public/images/icon/icon.ico",
+      "target": "nsis"
+    }
   }
 }

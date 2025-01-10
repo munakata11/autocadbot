@@ -1,1 +1,1 @@
-(setq old_osmode (getvar "osmode"))(setvar "osmode" 0)(command "RECTANG" "0,0" "5,5" "")(command "CIRCLE" "0,0" "2.5" "")(setvar "osmode" old_osmode)
+(setq old_osmode (getvar "osmode"))(setvar "osmode" 0)(command "CIRCLE" "(getpoint \"円の中心を指定してください:\")" "(getdist \"半径を指定してください:\")") (setvar "osmode" old_osmode)
