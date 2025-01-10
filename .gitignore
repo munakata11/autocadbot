@@ -42,3 +42,4 @@ next-env.d.ts
 # release
 /release
 /dist
+release/win-unpacked/
