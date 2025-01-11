@@ -1,8 +1,8 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs').promises;
-const isDev = process.env.NODE_ENV !== 'production';
+const isDev = process.env.NODE_ENV === 'development';
 const express = require('express');
 const expressApp = express();
 const net = require('net');
@@ -10,9 +10,18 @@ const http = require('http');
 
 const HISTORY_FILE_PATH = path.join(__dirname, '..', 'data', 'chat_history.json');
 const BOOKMARKS_FILE_PATH = path.join(__dirname, '..', 'data', 'bookmarks.json');
+const LOG_FILE_PATH = path.join(app.getPath('userData'), 'app.log');
 
 let mainWindow = null;
 let server = null;
+
+// ログ出力関数
+function log(message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `${timestamp}: ${message}\n`;
+  console.log(logMessage);
+  fs.appendFile(LOG_FILE_PATH, logMessage).catch(err => console.error('Failed to write to log file:', err));
+}
 
 // ポートが使用可能かチェック
 async function findAvailablePort(startPort) {
@@ -180,29 +189,40 @@ async function startServer() {
   return new Promise(async (resolve, reject) => {
     try {
       if (isDev) {
-        // 開発環境では Next.js の開発サーバーを使用
-        console.log('Development mode: Using Next.js dev server');
+        log('Development mode: Using Next.js dev server');
         const port = 3000;
         const url = `http://localhost:${port}`;
-        
-        // Next.jsサーバーが起動するまで待機
         try {
           await waitForServer(url);
-          console.log('Next.js server is ready');
+          log('Next.js server is ready');
           resolve(url);
         } catch (err) {
-          console.error('Failed to connect to Next.js server:', err);
+          log(`Failed to connect to Next.js server: ${err.message}`);
           reject(err);
         }
         return;
       }
 
       // 本番環境のパスを設定
-      const distPath = isDev 
-        ? path.join(__dirname, '..', 'dist', 'app')
-        : path.join(process.resourcesPath, 'app');
-      
-      console.log('Static files path:', distPath);
+      let distPath;
+      try {
+        distPath = path.join(app.getAppPath(), 'dist', 'app');
+        // パスが存在するか確認
+        await fs.access(distPath);
+        log(`Production static files path exists: ${distPath}`);
+      } catch (err) {
+        log(`Failed to access dist path: ${err.message}`);
+        log('Falling back to resource path');
+        distPath = path.join(process.resourcesPath, 'app');
+        try {
+          await fs.access(distPath);
+        } catch (err) {
+          log(`Failed to access resource path: ${err.message}`);
+          throw new Error(`静的ファイルのパスが見つかりません: ${distPath}`);
+        }
+      }
+
+      log(`Using static files path: ${distPath}`);
 
       // 静的ファイルの提供設定
       expressApp.use(express.static(distPath));
@@ -210,68 +230,78 @@ async function startServer() {
 
       // すべてのルートでindex.htmlを返す
       expressApp.get('*', (req, res) => {
-        res.sendFile(path.join(distPath, 'index.html'));
+        const indexPath = path.join(distPath, 'index.html');
+        log(`Serving index.html from: ${indexPath}`);
+        res.sendFile(indexPath);
       });
 
-      // サーバーを起動
+      // 利用可能なポートを見つけて起動
       const port = await findAvailablePort(3000);
       server = expressApp.listen(port, 'localhost', () => {
         const url = `http://localhost:${port}`;
-        console.log(`Production server is running on ${url}`);
+        log(`Production server is running on ${url}`);
         resolve(url);
       });
 
       server.on('error', (err) => {
-        console.error('Server error:', err);
+        log(`Server error: ${err.message}`);
         reject(err);
       });
     } catch (err) {
-      console.error('Failed to start server:', err);
+      log(`Failed to start server: ${err.message}`);
       reject(err);
     }
   });
 }
 
-function createWindow() {
-  mainWindow = new BrowserWindow({
-    width: 950,
-    height: 730,
-    resizable: false,
-    autoHideMenuBar: true,
-    title: 'AutoCAD Assistant',
-    icon: path.join(__dirname, '..', 'public', 'images', 'icon', 'icon.ico'),
-    webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
-      preload: path.join(__dirname, 'preload.js')
-    }
-  });
+async function createWindow(startUrl) {
+  try {
+    if (!mainWindow) {
+      log('Creating new BrowserWindow');
+      mainWindow = new BrowserWindow({
+        width: 950,
+        height: 730,
+        resizable: false,
+        autoHideMenuBar: true,
+        title: 'AutoCAD Assistant',
+        icon: path.join(process.resourcesPath, 'public', 'images', 'icon', 'icon.ico'),
+        webPreferences: {
+          nodeIntegration: false,
+          contextIsolation: true,
+          preload: path.join(__dirname, 'preload.js')
+        }
+      });
 
-  const loadWindow = async () => {
-    try {
-      const startUrl = await startServer();
-      console.log('Loading URL:', startUrl);
-      await mainWindow.loadURL(startUrl);
-      console.log('Window loaded successfully');
-    } catch (err) {
-      console.error('Failed to load window:', err);
-      if (isDev) {
-        console.log('Retrying in development mode...');
-        setTimeout(loadWindow, 3000);
-      }
-    }
-  };
-
-  loadWindow();
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-    if (server) {
-      server.close(() => {
-        console.log('Server closed');
+      mainWindow.on('closed', () => {
+        log('Main window closed');
+        mainWindow = null;
+        if (server) {
+          server.close(() => {
+            log('Server closed');
+          });
+        }
       });
     }
-  });
+
+    log(`Loading URL: ${startUrl}`);
+    await mainWindow.loadURL(startUrl);
+    log('Window loaded successfully');
+
+    // デバッグ用：開発者ツールを開く
+    if (isDev) {
+      log('Opening DevTools in development mode');
+      mainWindow.webContents.openDevTools();
+    }
+  } catch (err) {
+    log(`Failed to create/load window: ${err.message}`);
+    log(`Error stack: ${err.stack}`);
+    if (isDev) {
+      log('Retrying in development mode...');
+      setTimeout(() => createWindow(startUrl), 3000);
+    } else {
+      throw err;
+    }
+  }
 }
 
 // IPCハンドラーの設定
@@ -298,19 +328,53 @@ ipcMain.handle('load-bookmarks', async () => {
 // アプリケーションの起動処理
 app.whenReady().then(async () => {
   try {
+    log('Initializing application...');
+    log(`App path: ${app.getAppPath()}`);
+    log(`Resource path: ${process.resourcesPath}`);
+    log(`Is Development: ${isDev}`);
+    
     await initializeDataDirectories();
-    await startServer();
-    createWindow();
+    
+    log('Starting server...');
+    const startUrl = await startServer();
+    
+    log('Creating window...');
+    await createWindow(startUrl);
+    
+    log('Application started successfully');
   } catch (err) {
-    console.error('Failed to initialize application:', err);
+    log(`Failed to initialize application: ${err.message}`);
+    log(`Stack trace: ${err.stack}`);
+    dialog.showErrorBox('起動エラー',
+      'アプリケーションの起動中にエラーが発生しました。\n' +
+      `エラー詳細: ${err.message}\n` +
+      `ログファイルを確認してください: ${LOG_FILE_PATH}`
+    );
     app.quit();
   }
+});
 
-  app.on('activate', () => {
-    if (mainWindow === null) {
-      createWindow();
+// 開発モードの場合、アプリケーションの再起動をハンドリング
+if (isDev) {
+  app.on('activate', async () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      log('Reactivating application in development mode');
+      const startUrl = await startServer();
+      await createWindow(startUrl);
     }
   });
+}
+
+// エラーハンドリング
+process.on('uncaughtException', (error) => {
+  log(`Uncaught Exception: ${error.message}`);
+  log(`Stack trace: ${error.stack}`);
+  dialog.showErrorBox('予期せぬエラー',
+    'アプリケーションで予期せぬエラーが発生しました。\n' +
+    `エラー詳細: ${error.message}\n` +
+    `ログファイルを確認してください: ${LOG_FILE_PATH}`
+  );
+  app.quit();
 });
 
 app.on('window-all-closed', () => {
