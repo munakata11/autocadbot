@@ -43,3 +43,7 @@ next-env.d.ts
 /release
 /dist
 release/win-unpacked/
+
+/release
+/dist
+/node_modules
