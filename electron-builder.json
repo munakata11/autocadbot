@@ -21,10 +21,6 @@
     {
       "from": "lisp_files",
       "to": "lisp_files"
-    },
-    {
-      "from": "data",
-      "to": "data"
     }
   ],
   "win": {

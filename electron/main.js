@@ -6,13 +6,8 @@ const isDev = process.env.NODE_ENV !== 'production';
 const express = require('express');
 const expressApp = express();
 
-// 本番環境とdev環境でのベースパスを設定
-const getBasePath = () => {
-  return isDev ? path.join(__dirname, '..') : process.resourcesPath;
-};
-
-const HISTORY_FILE_PATH = path.join(getBasePath(), 'data', 'chat_history.json');
-const BOOKMARKS_FILE_PATH = path.join(getBasePath(), 'data', 'bookmarks.json');
+const HISTORY_FILE_PATH = path.join(__dirname, '..', 'data', 'chat_history.json');
+const BOOKMARKS_FILE_PATH = path.join(__dirname, '..', 'data', 'bookmarks.json');
 
 let mainWindow = null;
 let server = null;
@@ -20,32 +15,24 @@ let server = null;
 // 初期化時にデータディレクトリを作成
 async function initializeDataDirectories() {
   try {
-    const dataDir = path.join(getBasePath(), 'data');
-    await fs.mkdir(dataDir, { recursive: true });
-    console.log('データディレクトリを作成しました:', dataDir);
+    await fs.mkdir(path.join(__dirname, '..', 'data'), { recursive: true });
+    console.log('データディレクトリを作成しました');
     
     // 履歴ファイルが存在しない場合は空の配列で初期化
     try {
       await fs.access(HISTORY_FILE_PATH);
-      console.log('履歴ファイルが存在します:', HISTORY_FILE_PATH);
     } catch {
       await fs.writeFile(HISTORY_FILE_PATH, '[]', 'utf-8');
-      console.log('履歴ファイルを初期化しました:', HISTORY_FILE_PATH);
+      console.log('履歴ファイルを初期化しました');
     }
     
     // ブックマークファイルが存在しない場合は空の配列で初期化
     try {
       await fs.access(BOOKMARKS_FILE_PATH);
-      console.log('ブックマークファイルが存在します:', BOOKMARKS_FILE_PATH);
     } catch {
       await fs.writeFile(BOOKMARKS_FILE_PATH, '[]', 'utf-8');
-      console.log('ブックマークファイルを初期化しました:', BOOKMARKS_FILE_PATH);
+      console.log('ブックマークファイルを初期化しました');
     }
-
-    // LSPファイル用のディレクトリも作成
-    const lispDir = path.join(getBasePath(), 'lisp_files');
-    await fs.mkdir(lispDir, { recursive: true });
-    console.log('LSPディレクトリを作成しました:', lispDir);
   } catch (error) {
     console.error('データディレクトリの初期化に失敗しました:', error);
   }
@@ -142,8 +129,14 @@ async function loadBookmarks() {
 async function startServer() {
   return new Promise((resolve, reject) => {
     try {
+      if (isDev) {
+        // 開発環境では Next.js の開発サーバーを使用
+        resolve();
+        return;
+      }
+
       // 本番環境のパスを設定
-      const distPath = isDev ? path.join(__dirname, '..', 'dist', 'app') : path.join(process.resourcesPath, 'app');
+      const distPath = path.join(process.resourcesPath, 'app');
       console.log('Static files path:', distPath);
 
       // 静的ファイルの提供設定
@@ -162,20 +155,8 @@ async function startServer() {
       });
 
       server.on('error', (err) => {
-        if (err.code === 'EADDRINUSE') {
-          console.log('Port 3000 is already in use. Trying to close existing server...');
-          require('tcp-port-used').check(3000, 'localhost')
-            .then(inUse => {
-              if (inUse) {
-                console.log('Attempting to close existing connection...');
-                server.close();
-                startServer().then(resolve).catch(reject);
-              }
-            });
-        } else {
-          console.error('Server error:', err);
-          reject(err);
-        }
+        console.error('Server error:', err);
+        reject(err);
       });
     } catch (err) {
       console.error('Failed to start server:', err);
@@ -199,17 +180,17 @@ function createWindow() {
     }
   });
 
-  // 開発者ツールを常に開く
-  mainWindow.webContents.openDevTools();
-
-  // サーバーが起動するまで待ってからウィンドウを読み込む
   const loadWindow = async () => {
     try {
-      await mainWindow.loadURL('http://localhost:3000');
+      const url = isDev ? 'http://localhost:3000' : 'http://localhost:3000';
+      await mainWindow.loadURL(url);
       console.log('Window loaded successfully');
     } catch (err) {
       console.error('Failed to load window:', err);
-      setTimeout(loadWindow, 1000); // 1秒後に再試行
+      if (isDev) {
+        // 開発環境では1秒後に再試行
+        setTimeout(loadWindow, 1000);
+      }
     }
   };
 
