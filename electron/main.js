@@ -8,8 +8,8 @@ const expressApp = express();
 const net = require('net');
 const http = require('http');
 
-const HISTORY_FILE_PATH = path.join(__dirname, '..', 'data', 'chat_history.json');
-const BOOKMARKS_FILE_PATH = path.join(__dirname, '..', 'data', 'bookmarks.json');
+const HISTORY_FILE_PATH = path.join(app.getPath('userData'), 'chat_history.json');
+const BOOKMARKS_FILE_PATH = path.join(app.getPath('userData'), 'bookmarks.json');
 const LOG_FILE_PATH = path.join(app.getPath('userData'), 'app.log');
 
 let mainWindow = null;
@@ -101,12 +101,7 @@ async function initializeDataDirectories() {
 async function saveLispFile(content) {
   try {
     const filename = 'direction.lsp';
-    // 本番環境とdev環境でのパスを分岐
-    const basePath = isDev
-      ? path.join(__dirname, '..')
-      : app.getPath('userData');
-    
-    const lispDir = path.join(basePath, 'lisp_files');
+    const lispDir = path.join(app.getPath('userData'), 'lisp_files');
     const filePath = path.join(lispDir, filename);
     
     log(`保存先ディレクトリ: ${lispDir}`);
@@ -287,9 +282,10 @@ async function createWindow(startUrl) {
     await mainWindow.loadURL(startUrl);
     log('Window loaded successfully');
 
-    // 開発者ツールを常に開く
-    log('Opening DevTools');
-    mainWindow.webContents.openDevTools();
+    if (isDev) {
+      log('Opening DevTools in development mode');
+      mainWindow.webContents.openDevTools();
+    }
 
     mainWindow.webContents.on('did-finish-load', () => {
       log('Window content finished loading');
