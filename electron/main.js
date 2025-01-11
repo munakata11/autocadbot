@@ -5,12 +5,62 @@ const fs = require('fs').promises;
 const isDev = process.env.NODE_ENV !== 'production';
 const express = require('express');
 const expressApp = express();
+const net = require('net');
+const http = require('http');
 
 const HISTORY_FILE_PATH = path.join(__dirname, '..', 'data', 'chat_history.json');
 const BOOKMARKS_FILE_PATH = path.join(__dirname, '..', 'data', 'bookmarks.json');
 
 let mainWindow = null;
 let server = null;
+
+// ポートが使用可能かチェック
+async function findAvailablePort(startPort) {
+  const isPortAvailable = (port) => {
+    return new Promise((resolve) => {
+      const server = net.createServer();
+      server.once('error', () => resolve(false));
+      server.once('listening', () => {
+        server.close();
+        resolve(true);
+      });
+      server.listen(port);
+    });
+  };
+
+  let port = startPort;
+  while (!(await isPortAvailable(port))) {
+    port++;
+  }
+  return port;
+}
+
+// サーバーが応答するまで待機
+async function waitForServer(url, maxRetries = 30) {
+  return new Promise((resolve, reject) => {
+    let retries = 0;
+    const checkServer = () => {
+      http.get(url, (res) => {
+        if (res.statusCode === 200) {
+          resolve();
+        } else {
+          retry();
+        }
+      }).on('error', retry);
+    };
+
+    const retry = () => {
+      retries++;
+      if (retries >= maxRetries) {
+        reject(new Error('Server did not respond'));
+        return;
+      }
+      setTimeout(checkServer, 1000);
+    };
+
+    checkServer();
+  });
+}
 
 // 初期化時にデータディレクトリを作成
 async function initializeDataDirectories() {
@@ -127,16 +177,31 @@ async function loadBookmarks() {
 }
 
 async function startServer() {
-  return new Promise((resolve, reject) => {
+  return new Promise(async (resolve, reject) => {
     try {
       if (isDev) {
         // 開発環境では Next.js の開発サーバーを使用
-        resolve();
+        console.log('Development mode: Using Next.js dev server');
+        const port = 3000;
+        const url = `http://localhost:${port}`;
+        
+        // Next.jsサーバーが起動するまで待機
+        try {
+          await waitForServer(url);
+          console.log('Next.js server is ready');
+          resolve(url);
+        } catch (err) {
+          console.error('Failed to connect to Next.js server:', err);
+          reject(err);
+        }
         return;
       }
 
       // 本番環境のパスを設定
-      const distPath = path.join(process.resourcesPath, 'app');
+      const distPath = isDev 
+        ? path.join(__dirname, '..', 'dist', 'app')
+        : path.join(process.resourcesPath, 'app');
+      
       console.log('Static files path:', distPath);
 
       // 静的ファイルの提供設定
@@ -149,9 +214,11 @@ async function startServer() {
       });
 
       // サーバーを起動
-      server = expressApp.listen(3000, 'localhost', () => {
-        console.log('Server is running on http://localhost:3000');
-        resolve();
+      const port = await findAvailablePort(3000);
+      server = expressApp.listen(port, 'localhost', () => {
+        const url = `http://localhost:${port}`;
+        console.log(`Production server is running on ${url}`);
+        resolve(url);
       });
 
       server.on('error', (err) => {
@@ -182,14 +249,15 @@ function createWindow() {
 
   const loadWindow = async () => {
     try {
-      const url = isDev ? 'http://localhost:3000' : 'http://localhost:3000';
-      await mainWindow.loadURL(url);
+      const startUrl = await startServer();
+      console.log('Loading URL:', startUrl);
+      await mainWindow.loadURL(startUrl);
       console.log('Window loaded successfully');
     } catch (err) {
       console.error('Failed to load window:', err);
       if (isDev) {
-        // 開発環境では1秒後に再試行
-        setTimeout(loadWindow, 1000);
+        console.log('Retrying in development mode...');
+        setTimeout(loadWindow, 3000);
       }
     }
   };

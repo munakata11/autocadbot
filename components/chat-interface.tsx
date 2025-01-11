@@ -326,7 +326,7 @@ const ChatInterface: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="メッセージを入力..."
-              className="bg-blue-50 border-white/20 placeholder:text-gray-600"
+              className="bg-blue-50 border-white/20 placeholder:text-gray-600 pl-4"
               disabled={isLoading}
             />
             <Button 
