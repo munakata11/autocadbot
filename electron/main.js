@@ -97,58 +97,58 @@ async function initializeDataDirectories() {
   }
 }
 
-// Pythonスクリプトを実行して.lspファイルを保存する関数
+// .lspファイルを保存する関数
 async function saveLispFile(content) {
   try {
     const filename = 'direction.lsp';
     // 本番環境とdev環境でのパスを分岐
-    const basePath = isDev 
-      ? path.join(__dirname, '..') 
-      : process.resourcesPath;
+    const basePath = isDev
+      ? path.join(__dirname, '..')
+      : app.getPath('userData');
     
     const lispDir = path.join(basePath, 'lisp_files');
     const filePath = path.join(lispDir, filename);
     
-    console.log('保存先ディレクトリ:', lispDir);
-    console.log('保存先ファイルパス:', filePath);
+    log(`保存先ディレクトリ: ${lispDir}`);
+    log(`保存先ファイルパス: ${filePath}`);
     
     // ディレクトリが存在しない場合は作成
     await fs.mkdir(lispDir, { recursive: true });
     
     // ファイルを上書きモードで保存
     await fs.writeFile(filePath, content, 'utf-8');
-    console.log('ファイル保存成功:', filePath);
+    log(`ファイル保存成功: ${filePath}`);
     return { success: true, filePath };
   } catch (error) {
-    console.error('Error saving lisp file:', error);
+    log(`Error saving lisp file: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
 async function saveHistory(history) {
   try {
-    console.log('履歴を保存します:', history);
+    log('履歴を保存します');
     await fs.mkdir(path.dirname(HISTORY_FILE_PATH), { recursive: true });
     await fs.writeFile(HISTORY_FILE_PATH, JSON.stringify(history, null, 2), 'utf-8');
-    console.log('履歴を保存しました');
+    log('履歴を保存しました');
     return { success: true };
   } catch (error) {
-    console.error('履歴の保存に失敗しました:', error);
+    log(`履歴の保存に失敗しました: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
 async function loadHistory() {
   try {
-    console.log('履歴ファイルを読み込みます:', HISTORY_FILE_PATH);
+    log(`履歴ファイルを読み込みます: ${HISTORY_FILE_PATH}`);
     const data = await fs.readFile(HISTORY_FILE_PATH, 'utf-8');
     const parsedData = JSON.parse(data);
-    console.log('履歴データを読み込みました:', parsedData);
+    log('履歴データを読み込みました');
     return { success: true, data: parsedData };
   } catch (error) {
-    console.error('履歴の読み込みに失敗しました:', error);
+    log(`履歴の読み込みに失敗しました: ${error.message}`);
     if (error.code === 'ENOENT') {
-      console.log('履歴ファイルが存在しないため、空の配列を返します');
+      log('履歴ファイルが存在しないため、空の配列を返します');
       return { success: true, data: [] };
     }
     return { success: false, error: error.message };
@@ -157,28 +157,28 @@ async function loadHistory() {
 
 async function saveBookmarks(bookmarks) {
   try {
-    console.log('ブックマークを保存します:', bookmarks);
+    log('ブックマークを保存します');
     await fs.mkdir(path.dirname(BOOKMARKS_FILE_PATH), { recursive: true });
     await fs.writeFile(BOOKMARKS_FILE_PATH, JSON.stringify(bookmarks, null, 2), 'utf-8');
-    console.log('ブックマークを保存しました');
+    log('ブックマークを保存しました');
     return { success: true };
   } catch (error) {
-    console.error('ブックマークの保存に失敗しました:', error);
+    log(`ブックマークの保存に失敗しました: ${error.message}`);
     return { success: false, error: error.message };
   }
 }
 
 async function loadBookmarks() {
   try {
-    console.log('ブックマークファイルを読み込みます:', BOOKMARKS_FILE_PATH);
+    log(`ブックマークファイルを読み込みます: ${BOOKMARKS_FILE_PATH}`);
     const data = await fs.readFile(BOOKMARKS_FILE_PATH, 'utf-8');
     const parsedData = JSON.parse(data);
-    console.log('ブックマークデータを読み込みました:', parsedData);
+    log('ブックマークデータを読み込みました');
     return { success: true, data: parsedData };
   } catch (error) {
-    console.error('ブックマークの読み込みに失敗しました:', error);
+    log(`ブックマークの読み込みに失敗しました: ${error.message}`);
     if (error.code === 'ENOENT') {
-      console.log('ブックマークファイルが存在しないため、空の配列を返します');
+      log('ブックマークファイルが存在しないため、空の配列を返します');
       return { success: true, data: [] };
     }
     return { success: false, error: error.message };
@@ -287,11 +287,17 @@ async function createWindow(startUrl) {
     await mainWindow.loadURL(startUrl);
     log('Window loaded successfully');
 
-    // デバッグ用：開発者ツールを開く
-    if (isDev) {
-      log('Opening DevTools in development mode');
-      mainWindow.webContents.openDevTools();
-    }
+    // 開発者ツールを常に開く
+    log('Opening DevTools');
+    mainWindow.webContents.openDevTools();
+
+    mainWindow.webContents.on('did-finish-load', () => {
+      log('Window content finished loading');
+    });
+
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+      log(`Failed to load window content: ${errorDescription} (${errorCode})`);
+    });
   } catch (err) {
     log(`Failed to create/load window: ${err.message}`);
     log(`Error stack: ${err.stack}`);
@@ -331,6 +337,7 @@ app.whenReady().then(async () => {
     log('Initializing application...');
     log(`App path: ${app.getAppPath()}`);
     log(`Resource path: ${process.resourcesPath}`);
+    log(`User data path: ${app.getPath('userData')}`);
     log(`Is Development: ${isDev}`);
     
     await initializeDataDirectories();
@@ -354,16 +361,14 @@ app.whenReady().then(async () => {
   }
 });
 
-// 開発モードの場合、アプリケーションの再起動をハンドリング
-if (isDev) {
-  app.on('activate', async () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      log('Reactivating application in development mode');
-      const startUrl = await startServer();
-      await createWindow(startUrl);
-    }
-  });
-}
+// アプリケーションの再起動をハンドリング
+app.on('activate', async () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    log('Reactivating application');
+    const startUrl = await startServer();
+    await createWindow(startUrl);
+  }
+});
 
 // エラーハンドリング
 process.on('uncaughtException', (error) => {
@@ -378,14 +383,20 @@ process.on('uncaughtException', (error) => {
 });
 
 app.on('window-all-closed', () => {
+  log('All windows closed');
   if (process.platform !== 'darwin') {
     if (server) {
       server.close(() => {
-        console.log('Server closed');
+        log('Server closed');
         app.quit();
       });
     } else {
       app.quit();
     }
   }
+});
+
+// アプリケーション終了時の処理
+app.on('will-quit', () => {
+  log('Application is about to quit');
 });
