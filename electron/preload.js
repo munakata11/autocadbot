@@ -24,5 +24,8 @@ contextBridge.exposeInMainWorld('electron', {
   },
   loadBookmarks: () => {
     return ipcRenderer.invoke('load-bookmarks');
+  },
+  setAlwaysOnTop: (value) => {
+    return ipcRenderer.invoke('set-always-on-top', value);
   }
 }); 

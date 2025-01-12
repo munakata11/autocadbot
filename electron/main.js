@@ -327,63 +327,99 @@ ipcMain.handle('load-bookmarks', async () => {
   return await loadBookmarks();
 });
 
-// アプリケーションの起動処理
-app.whenReady().then(async () => {
+// 前面固定の制御
+ipcMain.handle('set-always-on-top', async (event, value) => {
   try {
-    log('Initializing application...');
-    log(`App path: ${app.getAppPath()}`);
-    log(`Resource path: ${process.resourcesPath}`);
-    log(`User data path: ${app.getPath('userData')}`);
-    log(`Is Development: ${isDev}`);
-    
-    await initializeDataDirectories();
-    
-    log('Starting server...');
-    const startUrl = await startServer();
-    
-    log('Creating window...');
-    await createWindow(startUrl);
-    
-    log('Application started successfully');
-  } catch (err) {
-    log(`Failed to initialize application: ${err.message}`);
-    log(`Stack trace: ${err.stack}`);
-    dialog.showErrorBox('起動エラー',
-      'アプリケーションの起動中にエラーが発生しました。\n' +
-      `エラー詳細: ${err.message}\n` +
-      `ログファイルを確認してください: ${LOG_FILE_PATH}`
-    );
+    if (mainWindow) {
+      mainWindow.setAlwaysOnTop(value);
+      log(`ウィンドウの前面固定を${value ? '有効' : '無効'}にしました`);
+      return { success: true };
+    }
+    return { success: false, error: 'メインウィンドウが見つかりません' };
+  } catch (error) {
+    log(`前面固定の設定中にエラーが発生しました: ${error.message}`);
+    return { success: false, error: error.message };
+  }
+});
+
+// シングルインスタンスロック
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  // 既存のインスタンスが実行中の場合は、新しいインスタンスを終了
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    // 2つ目のインスタンスが起動された場合、既存のウィンドウにフォーカス
+    const existingWindow = BrowserWindow.getAllWindows()[0];
+    if (existingWindow) {
+      if (existingWindow.isMinimized()) {
+        existingWindow.restore();
+      }
+      existingWindow.focus();
+    }
+  });
+
+  // アプリケーションの起動処理
+  app.whenReady().then(async () => {
+    try {
+      // 既存のウィンドウがある場合はそれをフォーカス
+      const existingWindow = BrowserWindow.getAllWindows()[0];
+      if (existingWindow) {
+        if (existingWindow.isMinimized()) {
+          existingWindow.restore();
+        }
+        existingWindow.focus();
+        return;
+      }
+
+      // 新しいウィンドウを作成
+      await initializeDataDirectories();
+      const startUrl = await startServer();
+      await createWindow(startUrl);
+    } catch (err) {
+      // エラーログのみ記録し、エラーダイアログは表示しない
+      log(`Application error: ${err.message}`);
+      app.quit();
+    }
+  });
+
+  // アプリケーションの再起動をハンドリング
+  app.on('activate', async () => {
+    try {
+      // 既存のウィンドウがある場合はそれをフォーカス
+      const existingWindow = BrowserWindow.getAllWindows()[0];
+      if (existingWindow) {
+        if (existingWindow.isMinimized()) {
+          existingWindow.restore();
+        }
+        existingWindow.focus();
+        return;
+      }
+
+      // 新しいウィンドウを作成
+      const startUrl = await startServer();
+      await createWindow(startUrl);
+    } catch (err) {
+      // エラーログのみ記録
+      log(`Activation error: ${err.message}`);
+    }
+  });
+}
+
+// エラーハンドリング
+process.on('uncaughtException', (error) => {
+  // エラーログのみ記録し、エラーダイアログは表示しない
+  log(`Uncaught Exception: ${error.message}`);
+  if (!BrowserWindow.getAllWindows().length) {
     app.quit();
   }
 });
 
-// アプリケーションの再起動をハンドリング
-app.on('activate', async () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    log('Reactivating application');
-    const startUrl = await startServer();
-    await createWindow(startUrl);
-  }
-});
-
-// エラーハンドリング
-process.on('uncaughtException', (error) => {
-  log(`Uncaught Exception: ${error.message}`);
-  log(`Stack trace: ${error.stack}`);
-  dialog.showErrorBox('予期せぬエラー',
-    'アプリケーションで予期せぬエラーが発生しました。\n' +
-    `エラー詳細: ${error.message}\n` +
-    `ログファイルを確認してください: ${LOG_FILE_PATH}`
-  );
-  app.quit();
-});
-
 app.on('window-all-closed', () => {
-  log('All windows closed');
   if (process.platform !== 'darwin') {
     if (server) {
       server.close(() => {
-        log('Server closed');
         app.quit();
       });
     } else {
@@ -394,5 +430,5 @@ app.on('window-all-closed', () => {
 
 // アプリケーション終了時の処理
 app.on('will-quit', () => {
-  log('Application is about to quit');
+  log('Application is shutting down');
 });

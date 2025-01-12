@@ -210,18 +210,17 @@ const ChatInterface: React.FC = () => {
 
   const handleAlwaysOnTop = async (checked: boolean) => {
     try {
-      // @ts-ignore
-      if (window?.__TAURI__?.window) {
-        // @ts-ignore
-        const appWindow = await window.__TAURI__.window.getCurrent();
-        await appWindow.setAlwaysOnTop(checked);
-        setIsAlwaysOnTop(checked);
-      } else {
-        // Tauriが利用できない環境でもチェックボックスの状態は更新
-        setIsAlwaysOnTop(checked);
+      if (window.electron) {
+        const result = await window.electron.setAlwaysOnTop(checked);
+        if (result.success) {
+          setIsAlwaysOnTop(checked);
+        } else {
+          console.error('前面固定の設定に失敗しました:', result.error);
+          setIsAlwaysOnTop(false);
+        }
       }
     } catch (e) {
-      console.error('Failed to set always on top:', e);
+      console.error('前面固定の設定中にエラーが発生しました:', e);
       setIsAlwaysOnTop(false);
     }
   };
