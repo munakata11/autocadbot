@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { generateUniqueId } from '@/lib/utils'
 import { Send, Mic } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -13,7 +14,7 @@ import { generateChatResponse as generateDeepseekResponse } from '@/lib/deepseek
 type MessageSender = 'user' | 'bot'
 
 interface Message {
-  id: number
+  id: string
   content: string
   sender: MessageSender
 }
@@ -21,7 +22,7 @@ interface Message {
 const ChatInterface: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
+      id: 'initial-message',
       content: "AutoCADで実行したい動作を入力してください！",
       sender: 'bot'
     }
@@ -46,7 +47,7 @@ const ChatInterface: React.FC = () => {
   useEffect(() => {
     const handleCustomMessage = (event: CustomEvent) => {
       setMessages([{
-        id: 1,
+        id: generateUniqueId(),
         content: "AutoCADで実行したい動作を入力してください！",
         sender: 'bot'
       }]);
@@ -77,7 +78,7 @@ const ChatInterface: React.FC = () => {
     window.dispatchEvent(newChatEvent);
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: generateUniqueId(),
       content: input,
       sender: 'user'
     }
@@ -87,16 +88,31 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true)
 
     try {
+      // 新しいメッセージのみを送信
       const chatMessages: ChatMessage[] = [
-        ...messages.map(msg => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.content
-        } as ChatMessage)),
+        {
+          role: 'system',
+          content: `AutoLISPコードを生成する際のアシスタントとして、以下のルールを守りながら、特定のタスクに対して必要なAutoLISPコードを提供します。出力されるコードはAutoLISPとして有効で、説明文や追加のコメントなしで提供します。
+
+- コードは1つのAutoLISPコードとして純粋に出力します。他の代替案や選択肢は提示しません。
+- コードブロックやマークダウン形式は使用しません。
+- 生成されるAutoLISPコードは、次のルールに従います。
+
+# Steps
+1. 現在のosmodeの状態を取得し、変数に保存します。
+2. AutoLISPコマンドを実行する直前にosmodeを0に設定します。
+3. コマンド実行後、またはユーザーインタラクションの後、保存した状態にosmodeを戻します。
+4. 必要に応じて、図面操作を行います。
+
+# Output Format
+- 純粋なAutoLISPコードを1つ出力します。
+- タスクに応じて、このパターンを使用して適切なコードを書くこと。`
+        },
         { role: 'user', content: input }
       ]
 
       const codeResponse = await generateGroqResponse(chatMessages)
-      
+       
       if (codeResponse) {
         if (showCode) {
           // Groqレスポンス完了時にイベントを発火
@@ -104,7 +120,7 @@ const ChatInterface: React.FC = () => {
           window.dispatchEvent(groqEvent);
           
           setMessages(messages => [...messages, {
-            id: Date.now() + 1,
+            id: generateUniqueId(),
             content: codeResponse,
             sender: 'bot' as const
           }])
@@ -112,8 +128,8 @@ const ChatInterface: React.FC = () => {
 
         if (showChat) {
           const explanationMessages: ChatMessage[] = [
-            { 
-              role: 'system', 
+            {
+              role: 'system',
               content: `あなたはとても明るいコード実行アシスタントです。
 以下のルールに従って、AutoLISPコードの説明を簡潔に行ってください：
 
@@ -127,7 +143,7 @@ const ChatInterface: React.FC = () => {
 - コードの説明以外の感想は不要です
 - 技術的な解説や設定への言及は避けてください
 - 「このAutoLISPコードを実行すると、」などの前置きは使わないでください
-- OSNAPなどの設定変更にはふれず、コマンドの動作中心に説明してください 
+- OSNAPなどの設定変更にはふれず、コマンドの動作中心に説明してください
 - 例えなどはいりません。 `
 
             },
@@ -145,7 +161,7 @@ const ChatInterface: React.FC = () => {
             window.dispatchEvent(deepseekEvent);
             
             setMessages(messages => [...messages, {
-              id: Date.now() + 2,
+              id: generateUniqueId(),
               content: explanationResponse,
               sender: 'bot' as const
             }])
@@ -157,7 +173,7 @@ const ChatInterface: React.FC = () => {
         }
       } else {
         setMessages(messages => [...messages, {
-          id: Date.now() + 1,
+          id: generateUniqueId(),
           content: "申し訳ありません。コードの生成中にエラーが発生しました。",
           sender: 'bot' as const
         }])
@@ -165,7 +181,7 @@ const ChatInterface: React.FC = () => {
     } catch (error) {
       console.error('Error:', error)
       setMessages(messages => [...messages, {
-        id: Date.now() + 1,
+        id: generateUniqueId(),
         content: "申し訳ありません。エラーが発生しました。",
         sender: 'bot' as const
       }])
