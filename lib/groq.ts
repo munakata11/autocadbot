@@ -35,7 +35,7 @@ export async function generateChatResponse(messages: ChatMessage[]) {
     ];
     
     const response = await groq.chat.completions.create({
-      model: 'mixtral-8x7b-32768',
+      model: 'Llama-3.3-70b-Versatile',
       messages: messagesToSend,
       temperature: 0.7,
       max_tokens: 1000,
