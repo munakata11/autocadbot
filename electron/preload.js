@@ -27,5 +27,8 @@ contextBridge.exposeInMainWorld('electron', {
   },
   setAlwaysOnTop: (value) => {
     return ipcRenderer.invoke('set-always-on-top', value);
+  },
+  onSelectedObjectsCount: (callback) => {
+    ipcRenderer.on('selected-objects-count', (event, count) => callback(count));
   }
 }); 

@@ -345,6 +345,20 @@ ipcMain.handle('set-always-on-top', async (event, value) => {
 // シングルインスタンスロック
 const gotTheLock = app.requestSingleInstanceLock();
 
+// コマンドライン引数を処理する関数
+function processCommandLineArgs() {
+  const args = process.argv.slice(1);
+  // 開発環境では最初の引数が'.'になるため、それをスキップ
+  const startIndex = isDev ? 2 : 1;
+  const selectedObjectCount = args[startIndex];
+  const count = selectedObjectCount ? parseInt(selectedObjectCount, 10) : null;
+  
+  if (count !== null) {
+    log(`AutoCADから選択オブジェクト数を受信: ${count}`);
+  }
+  return count;
+}
+
 if (!gotTheLock) {
   // 既存のインスタンスが実行中の場合は、新しいインスタンスを終了
   app.quit();
@@ -363,6 +377,9 @@ if (!gotTheLock) {
   // アプリケーションの起動処理
   app.whenReady().then(async () => {
     try {
+      // コマンドライン引数を処理
+      const selectedObjectCount = processCommandLineArgs();
+      
       // 既存のウィンドウがある場合はそれをフォーカス
       const existingWindow = BrowserWindow.getAllWindows()[0];
       if (existingWindow) {
@@ -370,6 +387,11 @@ if (!gotTheLock) {
           existingWindow.restore();
         }
         existingWindow.focus();
+        // 既存のウィンドウに新しい選択オブジェクト数を送信
+        if (selectedObjectCount !== null) {
+          log(`既存のウィンドウに選択オブジェクト数を送信: ${selectedObjectCount}`);
+          existingWindow.webContents.send('selected-objects-count', selectedObjectCount);
+        }
         return;
       }
 
@@ -377,6 +399,14 @@ if (!gotTheLock) {
       await initializeDataDirectories();
       const startUrl = await startServer();
       await createWindow(startUrl);
+      
+      // 新しいウィンドウに選択オブジェクト数を送信
+      if (selectedObjectCount !== null && mainWindow) {
+        mainWindow.webContents.on('did-finish-load', () => {
+          log(`新しいウィンドウに選択オブジェクト数を送信: ${selectedObjectCount}`);
+          mainWindow.webContents.send('selected-objects-count', selectedObjectCount);
+        });
+      }
     } catch (err) {
       // エラーログのみ記録し、エラーダイアログは表示しない
       log(`Application error: ${err.message}`);
