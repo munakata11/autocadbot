@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { generateChatResponse as generateGroqResponse, ChatMessage } from '@/lib/groq'
+import { generateChatResponse as generateGroqResponse, ChatMessage } from '@/lib/deepseek_generate'
 import { generateChatResponse as generateDeepseekResponse } from '@/lib/deepseek'
 
 type MessageSender = 'user' | 'bot'
