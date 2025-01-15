@@ -111,6 +111,9 @@ const ChatInterface: React.FC = () => {
         { role: 'user', content: input }
       ]
 
+      // システムプロンプトをコンソールに出力
+      console.log(chatMessages[0].content);
+
       const codeResponse = await generateGroqResponse(chatMessages)
        
       if (codeResponse) {
