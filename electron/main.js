@@ -1,6 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const { exec } = require('child_process');
 const fs = require('fs').promises;
 const isDev = process.env.NODE_ENV === 'development';
 const express = require('express');
@@ -100,7 +100,7 @@ async function initializeDataDirectories() {
 // .lspファイルを保存する関数
 async function saveLispFile(content) {
   try {
-    const filename = 'direction.lsp';
+    const filename = 'direction2.lsp';
     const lispDir = path.join(app.getPath('userData'), 'lisp_files');
     const filePath = path.join(lispDir, filename);
     
@@ -113,6 +113,21 @@ async function saveLispFile(content) {
     // ファイルを上書きモードで保存
     await fs.writeFile(filePath, content, 'utf-8');
     log(`ファイル保存成功: ${filePath}`);
+
+    // format_lisp.pyを実行
+    const pythonScript = path.join(__dirname, '../python/format_lisp.py');
+    exec(`python "${pythonScript}" "${filePath}"`, (error, stdout, stderr) => {
+      if (error) {
+        log(`Pythonスクリプトの実行中にエラーが発生しました: ${error.message}`);
+        return;
+      }
+      if (stderr) {
+        log(`stderr: ${stderr}`);
+        return;
+      }
+      log(`stdout: ${stdout}`);
+    });
+
     return { success: true, filePath };
   } catch (error) {
     log(`Error saving lisp file: ${error.message}`);
