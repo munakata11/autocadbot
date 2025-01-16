@@ -86,6 +86,13 @@
       "createDesktopShortcut": true,
       "installerIcon": "public/images/icon/icon.ico",
       "uninstallerIcon": "public/images/icon/icon.ico"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "python",
+        "to": "python",
+        "filter": ["**/*"]
+      }
+    ]
   }
 }

@@ -115,17 +115,48 @@ async function saveLispFile(content) {
     log(`ファイル保存成功: ${filePath}`);
 
     // format_lisp.pyを実行
-    const pythonScript = path.join(__dirname, '../python/format_lisp.py');
-    exec(`python "${pythonScript}" "${filePath}"`, (error, stdout, stderr) => {
+    let pythonScript;
+    let pythonDir;
+    if (isDev) {
+      pythonDir = path.join(__dirname, '../python');
+      pythonScript = path.join(pythonDir, 'format_lisp.py');
+    } else {
+      pythonDir = path.join(process.resourcesPath, 'python');
+      pythonScript = path.join(pythonDir, 'format_lisp.py');
+    }
+    
+    log(`Pythonディレクトリ: ${pythonDir}`);
+    log(`Pythonスクリプトのパス: ${pythonScript}`);
+    log(`処理対象のファイルパス: ${filePath}`);
+
+    // Pythonの実行環境をチェック
+    const checkPythonCmd = process.platform === 'win32' ? 'where python' : 'which python3';
+    exec(checkPythonCmd, (error, stdout, stderr) => {
       if (error) {
-        log(`Pythonスクリプトの実行中にエラーが発生しました: ${error.message}`);
+        log(`Pythonが見つかりません: ${error.message}`);
         return;
       }
-      if (stderr) {
-        log(`stderr: ${stderr}`);
-        return;
-      }
-      log(`stdout: ${stdout}`);
+      
+      const pythonPath = stdout.trim();
+      log(`使用するPythonのパス: ${pythonPath}`);
+      
+      // Pythonスクリプトを実行
+      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+      const command = `cd "${pythonDir}" && ${pythonCmd} "${pythonScript}" "${filePath}"`;
+      
+      log(`実行するコマンド: ${command}`);
+      
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          log(`Pythonスクリプトの実行中にエラーが発生しました: ${error.message}`);
+          log(`コマンド: ${command}`);
+          return;
+        }
+        if (stderr) {
+          log(`stderr: ${stderr}`);
+        }
+        log(`stdout: ${stdout}`);
+      });
     });
 
     return { success: true, filePath };
