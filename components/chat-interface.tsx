@@ -40,7 +40,6 @@ const ChatInterface: React.FC = () => {
     if (inputRef.current) {
       inputRef.current.value = input;
       inputRef.current.focus();
-      inputRef.current.setSelectionRange(input.length, input.length);
     }
   }, [input]);
 
@@ -344,7 +343,7 @@ const ChatInterface: React.FC = () => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="メッセージを入力..."
-              className="bg-blue-50 border-white/20 placeholder:text-gray-600 pl-4"
+              className="bg-blue-50 border-white/20 placeholder:text-gray-600 pl-4 w-full"
               disabled={isLoading}
             />
             <Button 
@@ -429,7 +428,24 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-               ユーザー選択 
+                ユーザー選択 
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="rounded-full text-sm"
+                onClick={() => handleShortcutClick("選択セット")}
+                onMouseEnter={() => {
+                  const event = new CustomEvent('shortcutHover', {
+                    detail: { message: 'メッセージボックスに「選択セット」を入力します' }
+                  });
+                  window.dispatchEvent(event);
+                }}
+                onMouseLeave={() => {
+                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
+                }}
+                disabled={isLoading}
+              >
+                選択セット 
               </Button>
               <Button 
                 variant="ghost" 
@@ -446,7 +462,7 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-               原点(0,0)
+                原点(0,0)
               </Button>
               <Button 
                 variant="ghost" 
@@ -463,8 +479,10 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-               四角形 
+                四角形 
               </Button>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
@@ -482,8 +500,6 @@ const ChatInterface: React.FC = () => {
               >
                 円
               </Button>
-            </div>
-            <div className="grid grid-cols-4 gap-2">
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
@@ -499,15 +515,15 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-              選択し 
+                選択し 
               </Button>
               <Button 
                 variant="ghost" 
                 className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("描いて")}
+                onClick={() => handleShortcutClick("作図して")}
                 onMouseEnter={() => {
                   const event = new CustomEvent('shortcutHover', {
-                    detail: { message: 'メッセージボックスに「描いて」を入力します' }
+                    detail: { message: 'メッセージボックスに「作図して」を入力します' }
                   });
                   window.dispatchEvent(event);
                 }}
@@ -516,7 +532,7 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-               描いて 
+                作図して 
               </Button>
               <Button 
                 variant="ghost" 
@@ -533,24 +549,7 @@ const ChatInterface: React.FC = () => {
                 }}
                 disabled={isLoading}
               >
-               画層 
-              </Button>
-              <Button 
-                variant="ghost" 
-                className="rounded-full text-sm"
-                onClick={() => handleShortcutClick("寸法")}
-                onMouseEnter={() => {
-                  const event = new CustomEvent('shortcutHover', {
-                    detail: { message: 'メッセージボックスに「寸法」を入力します' }
-                  });
-                  window.dispatchEvent(event);
-                }}
-                onMouseLeave={() => {
-                  window.dispatchEvent(new CustomEvent('shortcutHoverEnd'));
-                }}
-                disabled={isLoading}
-              >
-              寸法 
+                画層 
               </Button>
             </div>
           </div>

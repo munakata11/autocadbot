@@ -68,8 +68,8 @@ ${outputContent}
 
 # 基本ルール
 - コードは1つのAutoLISPコードとして純粋に出力します。他の代替案や選択肢は提示しません。
-- コードブロックやマークダウン形式は使用しません。
-- 出力されるコードはAutoLISPとして有効で、説明文や追加のコメントなしで提供します。
+- コードブロックやマークダウン形式は使用しません
+- 出力されるコードはAutoLISPとして有効で、説明文や追加のコメントは一切含まれません。
 
 # 選択オブジェクトの取り扱い
 選択オブジェクトがあるかないかは${outputContent}に記されている
@@ -97,7 +97,10 @@ ${outputContent.includes('ss_elec') ?
 (setq old_osmode (getvar "osmode"))
 (setvar "osmode" 0)
 (command "LINE" "0,0" "5,5" "")
-(setvar "osmode" old_osmode)`;
+(setvar "osmode" old_osmode)
+
+# 指示語の取り扱い
+- 「この」や「これを」といった指示語は、選択セットが存在する場合、選択セットを指していると理解します。`;
 
     const systemPrompt: ChatMessage = {
       role: 'system',
