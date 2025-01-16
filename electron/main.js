@@ -267,6 +267,16 @@ async function createWindow(startUrl) {
         }
       });
 
+      // ウィンドウがアクティブになったときの処理
+      mainWindow.on('focus', () => {
+        mainWindow.setTitle('AutoCAD Assistant（Active）');
+      });
+
+      // ウィンドウが非アクティブになったときの処理
+      mainWindow.on('blur', () => {
+        mainWindow.setTitle('AutoCAD Assistant');
+      });
+
       mainWindow.on('closed', () => {
         log('Main window closed');
         mainWindow = null;
