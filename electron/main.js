@@ -270,6 +270,8 @@ async function createWindow(startUrl) {
       // ウィンドウがアクティブになったときの処理
       mainWindow.on('focus', () => {
         mainWindow.setTitle('AutoCAD Assistant（Active）');
+        // 入力ボックスにフォーカスを移動
+        mainWindow.webContents.send('focus-input');
       });
 
       // ウィンドウが非アクティブになったときの処理

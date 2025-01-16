@@ -66,6 +66,18 @@ const ChatInterface: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const handleFocusInput = () => {
+      inputRef.current?.focus();
+    };
+
+    window.addEventListener('focus-input', handleFocusInput);
+
+    return () => {
+      window.removeEventListener('focus-input', handleFocusInput);
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || isLoading) return

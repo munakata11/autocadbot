@@ -56,7 +56,7 @@ export default function Home() {
       
       isWaitingForDeepseek.current = true;
       setCharacterImage("/images/character/character3.png");
-      setCharacterMessage("コードを実行しました！");
+      setCharacterMessage("コードを生成しています");
     };
 
     const handleDeepseekResponse = async (event: CustomEvent) => {
@@ -66,7 +66,7 @@ export default function Home() {
       
       isWaitingForDeepseek.current = false;
       setCharacterImage("/images/character/character2.png");
-      setCharacterMessage("こんな動作が実行されましたよ");
+      setCharacterMessage("こんな動作を実行しました！");
 
       // Groqの出力を.lspファイルとして保存
       if (window.electron) {
