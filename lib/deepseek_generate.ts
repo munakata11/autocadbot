@@ -20,32 +20,13 @@ export type ChatMessage = {
 // output.mdの内容を取得する関数
 async function fetchOutputMd() {
   try {
-    const response = await fetch('/md/output.md', {
-      headers: {
-        'Accept-Charset': 'utf-8'
-      }
-    });
+    const response = await fetch('/md/output.md');
     if (!response.ok) {
       throw new Error('Failed to fetch output.md');
     }
     
     const content = await response.text();
-    
-    // 文字化け対策：Shift-JISからUTF-8への変換が必要な場合に備えて
-    const decoder = new TextDecoder('utf-8');
-    const encoder = new TextEncoder();
-    const bytes = encoder.encode(content);
-    const decodedContent = decoder.decode(bytes);
-    
-    // ここで文字化けを防ぐために、UTF-8として正しくデコードされたか確認
-    if (!decodedContent.includes('選択オブジェクトの数')) {
-      console.warn('output.mdの内容が正しくデコードされていない可能性があります');
-    }
-    
-    console.log('output.mdの内容を正常に読み込みました');
-    console.log('output.md content:', decodedContent);
-
-    return decodedContent;
+    return content;
   } catch (error) {
     console.error('output.mdの読み込み中にエラーが発生しました:', error);
     return '';
@@ -107,7 +88,7 @@ ${outputContent.includes('ss_elec') ?
       content: baseSystemPrompt
     };
 
-    // プロンプトをコンソールに出力
+    // プロンプトをコンソールに出力（System Promptのみ）
     console.log('System Prompt:', systemPrompt.content);
 
     // 最新のユーザーメッセージのみを使用

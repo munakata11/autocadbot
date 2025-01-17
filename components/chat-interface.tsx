@@ -8,8 +8,9 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { generateChatResponse as generateGroqResponse, ChatMessage } from '@/lib/deepseek_generate'
-import { generateChatResponse as generateDeepseekResponse } from '@/lib/deepseek'
+import { generateChatResponse as generateGroqResponse } from '@/lib/groq'
+import { generateChatResponse as generateDeepseekResponse, ChatMessage } from '@/lib/deepseek_generate'
+import { generateChatResponse as generateDeepseekExplanation } from '@/lib/deepseek'
 
 type MessageSender = 'user' | 'bot'
 
@@ -99,40 +100,23 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true)
 
     try {
-      // 新しいメッセージのみを送信
-      const chatMessages: ChatMessage[] = [
-        {
-          role: 'system',
-          content: `AutoLISPコードを生成する際のアシスタントとして、以下のルールを守りながら、特定のタスクに対して必要なAutoLISPコードを提供します。出力されるコードはAutoLISPとして有効で、説明文や追加のコメントなしで提供します。
-
-- コードは1つのAutoLISPコードとして純粋に出力します。他の代替案や選択肢は提示しません。
-- コードブロックやマークダウン形式は使用しません。
-- 生成されるAutoLISPコードは、次のルールに従います。
-
-# Steps
-1. 現在のosmodeの状態を取得し、変数に保存します。
-2. AutoLISPコマンドを実行する直前にosmodeを0に設定します。
-3. コマンド実行後、またはユーザーインタラクションの後、保存した状態にosmodeを戻します。
-4. 必要に応じて、図面操作を行います。
-
-# Output Format
-- 純粋なAutoLISPコードを1つ出力します。
-- タスクに応じて、このパターンを使用して適切なコードを書くこと。`
-        },
+      // まずgroq.tsにメッセージを送信
+      const groqMessages: ChatMessage[] = [
         { role: 'user', content: input }
       ]
+      
+      const groqResponse = await generateGroqResponse(groqMessages)
+      console.log('Groq Response:', groqResponse)
 
-      // システムプロンプトをコンソールに出力
-      console.log(chatMessages[0].content);
+      // ここでgroqResponseを使用してdeepseek_generateにメッセージを送信
+      const chatMessages: ChatMessage[] = [
+        { role: 'user', content: groqResponse }
+      ]
 
-      const codeResponse = await generateGroqResponse(chatMessages)
+      const codeResponse = await generateDeepseekResponse(chatMessages)
        
       if (codeResponse) {
         if (showCode) {
-          // Groqレスポンス完了時にイベントを発火
-          const groqEvent = new CustomEvent('groqResponse');
-          window.dispatchEvent(groqEvent);
-          
           setMessages(messages => [...messages, {
             id: generateUniqueId(),
             content: codeResponse,
@@ -158,32 +142,20 @@ const ChatInterface: React.FC = () => {
 - 技術的な解説や設定への言及は避けてください
 - 「このAutoLISPコードを実行すると、」などの前置きは使わないでください
 - OSNAPなどの設定変更にはふれず、コマンドの動作中心に説明してください
-- 例えなどはいりません。 `
-
+- 例えなどはいりません。`
             },
-            { 
-              role: 'user', 
-              content: codeResponse 
-            }
+            { role: 'user', content: codeResponse }
           ]
-          
-          const explanationResponse = await generateDeepseekResponse(explanationMessages)
+
+          const explanationResponse = await generateDeepseekExplanation(explanationMessages)
           
           if (explanationResponse) {
-            // Deepseekレスポンス時にイベントを発火
-            const deepseekEvent = new CustomEvent('deepseekResponse');
-            window.dispatchEvent(deepseekEvent);
-            
             setMessages(messages => [...messages, {
               id: generateUniqueId(),
               content: explanationResponse,
               sender: 'bot' as const
             }])
           }
-        } else {
-          // チャット応答がオフの場合、応答完了イベントを発火
-          const responseCompleteEvent = new CustomEvent('responseComplete');
-          window.dispatchEvent(responseCompleteEvent);
         }
       } else {
         setMessages(messages => [...messages, {
