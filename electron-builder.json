@@ -21,6 +21,11 @@
     {
       "from": "lisp_files",
       "to": "lisp_files"
+    },
+    {
+      "from": "python",
+      "to": "python",
+      "filter": ["**/*"]
     }
   ],
   "win": {

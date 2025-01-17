@@ -60,7 +60,6 @@
     },
     "files": [
       "electron/**/*",
-      "python/**/*",
       "dist/**/*",
       "public/**/*",
       "package.json",
@@ -90,7 +89,7 @@
     "extraResources": [
       {
         "from": "python",
-        "to": "python",
+        "to": "resources/python",
         "filter": ["**/*"]
       }
     ]
