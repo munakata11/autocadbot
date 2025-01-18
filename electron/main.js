@@ -17,10 +17,13 @@ let server = null;
 
 // ログ出力関数
 function log(message) {
-  const timestamp = new Date().toISOString();
+  const now = new Date();
+  const jstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000)); // UTC+9（日本時間）
+  const timestamp = jstDate.toISOString().replace('Z', '+09:00');
   const logMessage = `${timestamp}: ${message}\n`;
   console.log(logMessage);
-  fs.appendFile(LOG_FILE_PATH, logMessage).catch(err => console.error('Failed to write to log file:', err));
+  fs.appendFile(LOG_FILE_PATH, logMessage)
+    .catch(err => console.error('ログファイルの書き込みに失敗しました:', err));
 }
 
 // ポートが使用可能かチェック
@@ -99,69 +102,94 @@ async function initializeDataDirectories() {
 
 // .lspファイルを保存する関数
 async function saveLispFile(content) {
+  log('saveLispFile関数が呼び出されました');
   try {
     const filename = 'direction2.lsp';
-    const lispDir = path.join(app.getPath('userData'), 'lisp_files');
-    const filePath = path.join(lispDir, filename);
+    let lispDir;
+    let filePath;
     
+    // 開発環境と本番環境でのパス設定
+    if (isDev) {
+      lispDir = path.join(__dirname, '..', 'lisp_files');
+    } else {
+      lispDir = path.join(process.resourcesPath, 'lisp_files');
+    }
+    filePath = path.join(lispDir, filename);
+    
+    log(`環境: ${isDev ? '開発' : '本番'}`);
     log(`保存先ディレクトリ: ${lispDir}`);
     log(`保存先ファイルパス: ${filePath}`);
     
     // ディレクトリが存在しない場合は作成
-    await fs.mkdir(lispDir, { recursive: true });
-    
-    // ファイルを上書きモードで保存
-    await fs.writeFile(filePath, content, 'utf-8');
-    log(`ファイル保存成功: ${filePath}`);
-
-    // format_lisp.pyを実行
-    let pythonScript;
-    let pythonDir;
-    if (isDev) {
-      pythonDir = path.join(__dirname, '../python');
-      pythonScript = path.join(pythonDir, 'format_lisp.py');
-    } else {
-      pythonDir = path.join(process.resourcesPath, 'python');
-      pythonScript = path.join(pythonDir, 'format_lisp.py');
+    try {
+      await fs.mkdir(lispDir, { recursive: true });
+      log(`ディレクトリの作成/確認完了: ${lispDir}`);
+    } catch (err) {
+      log(`ディレクトリの作成中にエラー: ${err.message}`);
+      throw err;
     }
     
-    log(`Pythonディレクトリ: ${pythonDir}`);
-    log(`Pythonスクリプトのパス: ${pythonScript}`);
-    log(`処理対象のファイルパス: ${filePath}`);
+    // ファイルを上書きモードで保存
+    try {
+      await fs.writeFile(filePath, content, 'utf-8');
+      log(`LSPファイルの保存完了: ${filePath}`);
+      log(`ファイルの内容: ${content.substring(0, 100)}...`);
+    } catch (err) {
+      log(`ファイルの保存中にエラー: ${err.message}`);
+      throw err;
+    }
 
-    // Pythonの実行環境をチェック
-    const checkPythonCmd = process.platform === 'win32' ? 'where python' : 'which python3';
-    exec(checkPythonCmd, (error, stdout, stderr) => {
-      if (error) {
-        log(`Pythonが見つかりません: ${error.message}`);
-        return;
-      }
-      
-      const pythonPath = stdout.trim();
-      log(`使用するPythonのパス: ${pythonPath}`);
-      
-      // Pythonスクリプトを実行
-      const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
-      const command = `cd "${pythonDir}" && ${pythonCmd} "${pythonScript}" "${filePath}"`;
-      
-      log(`実行するコマンド: ${command}`);
-      
+    // Pythonスクリプトのパス設定
+    let pythonDir;
+    let pythonScript;
+    
+    if (isDev) {
+      pythonDir = path.join(__dirname, '..', 'python');
+    } else {
+      pythonDir = path.join(process.resourcesPath, 'python');
+    }
+    pythonScript = path.join(pythonDir, 'format_lisp.py');
+    
+    log(`Pythonディレクトリ: ${pythonDir}`);
+    log(`Pythonスクリプト: ${pythonScript}`);
+
+    // Pythonスクリプトの実行
+    const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
+    const command = `cd "${pythonDir}" && ${pythonCmd} "${pythonScript}" "${filePath}"`;
+    log(`実行するコマンド: ${command}`);
+
+    return new Promise((resolve, reject) => {
       exec(command, (error, stdout, stderr) => {
         if (error) {
-          log(`Pythonスクリプトの実行中にエラーが発生しました: ${error.message}`);
+          log(`Pythonスクリプト実行エラー: ${error.message}`);
           log(`コマンド: ${command}`);
+          reject({ success: false, error: error.message });
           return;
         }
+        
         if (stderr) {
-          log(`stderr: ${stderr}`);
+          log(`Python stderr: ${stderr}`);
         }
-        log(`stdout: ${stdout}`);
+        
+        if (stdout) {
+          log(`Python stdout: ${stdout}`);
+        }
+        
+        // ファイルが実際に存在するか確認
+        fs.access(filePath)
+          .then(() => {
+            log(`ファイルの存在を確認: ${filePath}`);
+            resolve({ success: true, filePath });
+          })
+          .catch((err) => {
+            log(`ファイルの存在確認でエラー: ${err.message}`);
+            reject({ success: false, error: 'ファイルが見つかりません' });
+          });
       });
     });
-
-    return { success: true, filePath };
   } catch (error) {
-    log(`Error saving lisp file: ${error.message}`);
+    log(`LSPファイル処理エラー: ${error.message}`);
+    log(`エラースタック: ${error.stack}`);
     return { success: false, error: error.message };
   }
 }

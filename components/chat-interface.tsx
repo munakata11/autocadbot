@@ -116,6 +116,16 @@ const ChatInterface: React.FC = () => {
       const codeResponse = await generateDeepseekResponse(chatMessages)
        
       if (codeResponse) {
+        // lispファイルを保存
+        try {
+          const saveResult = await window.electron.saveLispFile(codeResponse);
+          if (!saveResult.success) {
+            console.error('LSPファイルの保存に失敗しました:', saveResult.error);
+          }
+        } catch (error) {
+          console.error('LSPファイルの保存中にエラーが発生しました:', error);
+        }
+
         if (showCode) {
           setMessages(messages => [...messages, {
             id: generateUniqueId(),

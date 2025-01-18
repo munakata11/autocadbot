@@ -91,6 +91,11 @@
         "from": "python",
         "to": "resources/python",
         "filter": ["**/*"]
+      },
+      {
+        "from": "lisp_files",
+        "to": "resources/lisp_files",
+        "filter": ["**/*"]
       }
     ]
   }
