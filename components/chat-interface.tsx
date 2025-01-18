@@ -108,9 +108,13 @@ const ChatInterface: React.FC = () => {
       const groqResponse = await generateGroqResponse(groqMessages)
       console.log('Groq Response:', groqResponse)
 
+      if (!groqResponse) {
+        throw new Error('Groqからの応答がありませんでした');
+      }
+
       // ここでgroqResponseを使用してdeepseek_generateにメッセージを送信
       const chatMessages: ChatMessage[] = [
-        { role: 'user', content: groqResponse }
+        { role: 'user', content: groqResponse as string }
       ]
 
       const codeResponse = await generateDeepseekResponse(chatMessages)
@@ -127,6 +131,10 @@ const ChatInterface: React.FC = () => {
         }
 
         if (showCode) {
+          // コード表示前にDeepseekのレスポンスイベントを発火
+          const deepseekEvent = new CustomEvent('deepseekResponse');
+          window.dispatchEvent(deepseekEvent);
+
           setMessages(messages => [...messages, {
             id: generateUniqueId(),
             content: codeResponse,
@@ -160,12 +168,20 @@ const ChatInterface: React.FC = () => {
           const explanationResponse = await generateDeepseekExplanation(explanationMessages)
           
           if (explanationResponse) {
+            // 説明表示前にレスポンス完了イベントを発火
+            const completeEvent = new CustomEvent('responseComplete');
+            window.dispatchEvent(completeEvent);
+
             setMessages(messages => [...messages, {
               id: generateUniqueId(),
               content: explanationResponse,
               sender: 'bot' as const
             }])
           }
+        } else {
+          // チャット応答が無効の場合も完了イベントを発火
+          const completeEvent = new CustomEvent('responseComplete');
+          window.dispatchEvent(completeEvent);
         }
       } else {
         setMessages(messages => [...messages, {
