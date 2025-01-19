@@ -68,25 +68,6 @@ export default function Home() {
       setCharacterImage("/images/character/character2.png");
       setCharacterMessage("こんな動作を実行しました！");
 
-      // Groqの出力を.lspファイルとして保存
-      if (window.electron) {
-        try {
-          const messages = document.querySelectorAll('.bg-gray-100.text-\\[\\#000080\\]');
-          const lastLispCode = messages[messages.length - 1]?.textContent;
-          
-          if (lastLispCode) {
-            const result = await window.electron.saveLispFile(lastLispCode);
-            if (result.success) {
-              console.log('LSPファイルを保存しました:', result.filePath);
-            } else {
-              console.error('LSPファイルの保存に失敗しました:', result.error);
-            }
-          }
-        } catch (error) {
-          console.error('LSPファイルの保存中にエラーが発生しました:', error);
-        }
-      }
-
       timerRef.current = setTimeout(() => {
         setCharacterImage("/images/character/character.png");
         setCharacterMessage("作図したい図形や実行したいコマンドを指示してください！");

@@ -102,7 +102,7 @@ async function initializeDataDirectories() {
 
 // .lspファイルを保存する関数
 async function saveLispFile(content) {
-  log('saveLispFile関数が呼び出されました');
+  log('LSPファイルの保存を開始します');
   try {
     const filename = 'direction2.lsp';
     let lispDir;
@@ -116,53 +116,25 @@ async function saveLispFile(content) {
     }
     filePath = path.join(lispDir, filename);
     
-    log(`環境: ${isDev ? '開発' : '本番'}`);
-    log(`保存先ディレクトリ: ${lispDir}`);
-    log(`保存先ファイルパス: ${filePath}`);
-    
     // ディレクトリが存在しない場合は作成
-    try {
-      await fs.mkdir(lispDir, { recursive: true });
-      log(`ディレクトリの作成/確認完了: ${lispDir}`);
-    } catch (err) {
-      log(`ディレクトリの作成中にエラー: ${err.message}`);
-      throw err;
-    }
+    await fs.mkdir(lispDir, { recursive: true });
     
     // ファイルを上書きモードで保存
-    try {
-      await fs.writeFile(filePath, content, 'utf-8');
-      log(`LSPファイルの保存完了: ${filePath}`);
-      log(`ファイルの内容: ${content.substring(0, 100)}...`);
-    } catch (err) {
-      log(`ファイルの保存中にエラー: ${err.message}`);
-      throw err;
-    }
+    await fs.writeFile(filePath, content, 'utf-8');
+    log(`LSPファイルを保存しました: ${filePath}`);
 
     // Pythonスクリプトのパス設定
-    let pythonDir;
-    let pythonScript;
-    
-    if (isDev) {
-      pythonDir = path.join(__dirname, '..', 'python');
-    } else {
-      pythonDir = path.join(process.resourcesPath, 'python');
-    }
-    pythonScript = path.join(pythonDir, 'format_lisp.py');
-    
-    log(`Pythonディレクトリ: ${pythonDir}`);
-    log(`Pythonスクリプト: ${pythonScript}`);
+    let pythonDir = isDev ? path.join(__dirname, '..', 'python') : path.join(process.resourcesPath, 'python');
+    let pythonScript = path.join(pythonDir, 'format_lisp.py');
 
     // Pythonスクリプトの実行
     const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
     const command = `cd "${pythonDir}" && ${pythonCmd} "${pythonScript}" "${filePath}"`;
-    log(`実行するコマンド: ${command}`);
 
     return new Promise((resolve, reject) => {
       exec(command, (error, stdout, stderr) => {
         if (error) {
           log(`Pythonスクリプト実行エラー: ${error.message}`);
-          log(`コマンド: ${command}`);
           reject({ success: false, error: error.message });
           return;
         }
@@ -171,25 +143,12 @@ async function saveLispFile(content) {
           log(`Python stderr: ${stderr}`);
         }
         
-        if (stdout) {
-          log(`Python stdout: ${stdout}`);
-        }
-        
-        // ファイルが実際に存在するか確認
-        fs.access(filePath)
-          .then(() => {
-            log(`ファイルの存在を確認: ${filePath}`);
-            resolve({ success: true, filePath });
-          })
-          .catch((err) => {
-            log(`ファイルの存在確認でエラー: ${err.message}`);
-            reject({ success: false, error: 'ファイルが見つかりません' });
-          });
+        log('Pythonスクリプトの実行が完了しました');
+        resolve({ success: true, filePath });
       });
     });
   } catch (error) {
     log(`LSPファイル処理エラー: ${error.message}`);
-    log(`エラースタック: ${error.stack}`);
     return { success: false, error: error.message };
   }
 }
