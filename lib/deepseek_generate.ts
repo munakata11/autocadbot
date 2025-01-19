@@ -43,45 +43,33 @@ export async function generateChatResponse(messages: ChatMessage[]) {
     const outputContent = await fetchOutputMd();
 
     const baseSystemPrompt = `AutoLISPコードを生成する際のアシスタントとして、以下のルールを守りながら、特定のタスクに対して必要なAutoLISPコードを提供します。
-
 # 現在の図面状態
 ${outputContent}
-
 # 基本ルール
 - コードは1つのAutoLISPコードとして純粋に出力します。他の代替案や選択肢は提示しません。
 - コードブロックやマークダウン形式は使用しません
 - 出力されるコードはAutoLISPとして有効で、説明文や追加のコメントは一切含まれません。
-
 # 選択オブジェクトの取り扱い
 選択オブジェクトがあるかないかは${outputContent}に記されている
-- 選択オブジェクトの数は ${outputContent.match(/選択オブジェクトの数: (\d+)/)?.[1] || '0'} です。
-${outputContent.includes('ss_elec') ? 
-  `- 既に選択セットss_elecが存在するため、新たに選択セットを作成する必要はありません。目的物にはss_elecを使用します。` : 
-  `- 選択セットが存在しない場合、必要に応じて新たにssで選択セットを作成するか、ユーザーが選択して選択セットを作成するようにします。`
+- 選択オブジェクトの数は ${outputContent.match(/選択オブジェクトの数: (\\d+)/)?.[1] || '0'} です。
+${
+  outputContent.includes('ss_elec')
+    ? '- 選択セットss_elecが存在するため、新たに選択セットを作成することはありません。目的物にはss_elecを使用します。(ss_elec (ssget "_X"))や(setq ss ss_elec)のような処理も必要なく、直接ss_elecがあるものとして扱う。'
+    : '- 選択セットが存在しない場合、必要に応じて新たにssで選択セットを作成するか、ユーザーが選択して選択セットを作成するようにします。'
 }
 
 # 基点の取り扱い
 - 基点が指定されていない場合、図面の中心座標（${outputContent.match(/中心座標: ([^\\n]+)/)?.[1] || '0,0'}）を基点として使用します。
 
 # コード生成のステップ
-1. 現在のosmodeの状態を取得し、変数に保存します。
-2. AutoLISPコマンドを実行する直前にosmodeを0に設定します。
-3. コマンド実行後、またはユーザーインタラクションの後、保存した状態にosmodeを戻します。
-4. 必要に応じて、図面操作を行います。
+1. 必要に応じて選択オブジェクトを処理し、図面操作を行う。
 
 # 注意点
-- osmodeの状態を取得する際の注意点として、コードの冒頭で必ず取得し保存してください。
-- コマンド実行中やユーザー選択時のosmode設定に注意が必要です。
+- コードは1つだけ出力し、他の案は提示しない。
+- AutoLISPコード以外の解説・コメントは含めない。
+- コードブロック（\`\`\`など）やマークダウン形式も使わない。
 
-# Example
-タスク: 線を2点間に描く
-(setq old_osmode (getvar "osmode"))
-(setvar "osmode" 0)
-(command "LINE" "0,0" "5,5" "")
-(setvar "osmode" old_osmode)
-
-# 指示語の取り扱い
-- 「この」や「これを」といった指示語は、選択セットが存在する場合、選択セットを指していると理解します。`;
+上記ルールに従い、純粋なAutoLISPコードのみ出力してください。`;
 
     const systemPrompt: ChatMessage = {
       role: 'system',

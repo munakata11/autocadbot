@@ -100,21 +100,9 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true)
 
     try {
-      // まずgroq.tsにメッセージを送信
-      const groqMessages: ChatMessage[] = [
-        { role: 'user', content: input }
-      ]
-      
-      const groqResponse = await generateGroqResponse(groqMessages)
-      console.log('Groq Response:', groqResponse)
-
-      if (!groqResponse) {
-        throw new Error('Groqからの応答がありませんでした');
-      }
-
-      // ここでgroqResponseを使用してdeepseek_generateにメッセージを送信
+      // ここでdeepseek_generateにメッセージを送信
       const chatMessages: ChatMessage[] = [
-        { role: 'user', content: groqResponse as string }
+        { role: 'user', content: input }
       ]
 
       const codeResponse = await generateDeepseekResponse(chatMessages)
